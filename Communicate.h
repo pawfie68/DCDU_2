@@ -1,6 +1,8 @@
 #include "Panels.h"
 #include <wx/wxprec.h>
 
+
+
 //this class will handle the communication between the panels
 class Communicate : public wxFrame
 {
@@ -15,4 +17,16 @@ public:
     PgCounterPanel* m_pgp;
     wxPanel* m_parent;
 
+private:
+   // wxDECLARE_EVENT_TABLE()
 };
+
+enum
+{
+//    CLIENT_QUIT = wxID_EXIT,
+//    CLIENT_ABOUT = wxID_ABOUT,
+//    CLIENT_OPEN = 100,
+//    CLIENT_CLOSE,
+    SOCKET_ID
+};
+

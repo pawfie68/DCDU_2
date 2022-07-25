@@ -1,5 +1,7 @@
 #include <wx/wx.h>
 #include <wx/panel.h>
+#include <wx/socket.h>
+
 
 //Panels, buttons, text boxes and events are initialized here
 
@@ -9,7 +11,7 @@ public:
 
     //MainPanel -> to top box of the screen
     MainPanel(wxPanel* parent);
-
+    ~MainPanel();
     //parent panel of the app
     wxPanel* m_parent;
 
@@ -18,7 +20,9 @@ public:
     void OnMsgMinus(wxCommandEvent& event);
     void OnPOEPlus(wxCommandEvent& event);
     void OnPOEMinus(wxCommandEvent& event);
-  
+
+
+    //     void OnButtonCombination(wxCommandEvent& event);
     //buttons for simulating the operation of the device
     wxButton* msg_plus;
     wxButton* msg_minus;
@@ -33,11 +37,35 @@ public:
 
     //font for handling custon fonts for main screen 
     wxFont* main_font;
+    //socket for TCP/IP connection
+    wxSocketClient* m_sock;
+    //flag to determine if socket is buissy processing data/transfers
+    bool m_busy;
 
+    //adress to handle TCP/IP
+    wxSockAddress* m_adress;
+
+
+    // event handlers for Socket menu
+    // when connection is established
+        void OnOpenConnection(wxCommandEvent& event);
+    //when data arrived
+        void OnSocketEvent(wxSocketEvent& event);
+    
+    //open connection with specified parameters
+        void OpenConnection(wxSockAddress::Family family);
+
+    const unsigned char len = 32;
+   
+  
     //some counters dot
     int count_msg;
     int count_poe;
+
+
+
 };
+
 
 class RightPanel : public wxPanel
 {
@@ -62,6 +90,9 @@ public:
     
     // font for handling custon fonts for right screen
     wxFont* right_font;
+
+    int m_IP_value;
+
 
 };
 
@@ -88,6 +119,8 @@ public:
 
     // font for handling custon fonts
     wxFont* left_font;
+
+    int m_IP_index;
 
 };
 

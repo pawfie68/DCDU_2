@@ -1,6 +1,10 @@
 #include "Communicate.h"
 #include <wx/statline.h>
 
+//#include <iostream>
+
+
+
 //this frame will cover whole screen of the LCD
 Communicate::Communicate(const wxString& title)
     : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition,
@@ -43,6 +47,11 @@ Communicate::Communicate(const wxString& title)
     hbox->Add(m_midp, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_pgp, 1, wxEXPAND | wxALL, 5);
     //m_parent->SetSizer(hbox);
+     
+    int count_msg;
+    int count_poe;
 
-    //this->Centre();
 }
+
+
+

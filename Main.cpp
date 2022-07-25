@@ -1,4 +1,4 @@
-#include "main.h"
+#include "Main.h"
 #include "Communicate.h"
 
 IMPLEMENT_APP(MyApp)
