@@ -20,9 +20,10 @@ Communicate::Communicate(const wxString& title)
         wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 30), wxSize(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3 - 60));
 
     //main sizer of the app
-    wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+    hbox = new wxBoxSizer(wxHORIZONTAL);
 
     //initializaton of all panels
+    m_ip = new IpPanel(m_parent);
     m_mp = new MainPanel(m_parent);
     m_rp = new RightPanel(m_parent);
     m_lp = new LeftPanel(m_parent);
@@ -30,6 +31,7 @@ Communicate::Communicate(const wxString& title)
     m_pgp = new PgCounterPanel(m_parent);
 
     //set defoult font color for all panels to white
+    m_ip->SetForegroundColour(wxColor(255, 255, 255));
     m_rp->SetForegroundColour(wxColor(255, 255, 255));
     m_mp->SetForegroundColour(wxColor(255, 255, 255));
     m_lp->SetForegroundColour(wxColor(255, 255, 255));
@@ -37,6 +39,7 @@ Communicate::Communicate(const wxString& title)
     m_pgp->SetForegroundColour(wxColor(255, 255, 255));
     
     //add panels to the main sizer
+    hbox->Add(m_ip, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_lp, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_rp, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_mp, 1, wxEXPAND | wxALL, 5);

@@ -8,6 +8,7 @@
 #include "../sample.xpm"
 #endif
 
+
 //MainPanel scaling with the screen resolution
 
 MainPanel::MainPanel(wxPanel* parent)
@@ -55,82 +56,9 @@ MainPanel::MainPanel(wxPanel* parent)
 	Connect(ID_POE_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(MainPanel::OnPOEMinus));
 
-
-	//////////////////////////////////////////
-//config
-// restore the control's values from the config
-
-// NB: in this program, the config object is already created at this moment
-// because we had called Get() from MyApp::OnInit(). However, if you later
-// change the code and don't create it before this line, it won't break
-// anything - unlike if you manually create wxConfig object with Create()
-// or in any other way (then you must be sure to create it before using it!).
-	wxConfigBase* pConfig = wxConfigBase::Get();
-	addr = &addr4;
-	//IP and PORT stored in registy->windows (/HKEY_CURRENT_USER/Software/YourVendor/YourApp)
-	// propably /user/lib/local/Skalarki on unix (or in the app root location)
-	// 
-	
-	/*Set up the config directory*/
-	pConfig->SetPath("/Controls");
-
-	/*we need to check if there are already values stored in this location*/
-	/*If they are empty, reed them from the user*/			
-
-	if (pConfig->Read("m_IP").IsEmpty() ||
-		pConfig->Read("m_PORT").IsEmpty())
-	{
-		// Ask user for server address
-		hostname = wxGetTextFromUser(
-			_("Enter the address of the server:"),
-			_("Connect ..."),
-			_("192.168.0.31"));
-		if (hostname.empty())
-			return;
-
-		// Ask user for server port
-		port = wxGetTextFromUser(
-			_("Enter the Port of the server:"),
-			_("Connect ..."),
-			_("5060"));
-		if (port.empty())
-			return;
-		/// <need some function for validation of ip adress and port values>
-		/// //////////////////////////////////////////////////////////////// ///
-		/// 
-		
-		/*write user defined values to the config file*/
-		pConfig->Write("m_IP", hostname);
-		pConfig->Write("m_PORT", port);
-		
-		/*initiate adress ip and port by user defined values*/
-		addr->Hostname(hostname);
-		addr->Service(port);
-	}
-
-	//If there are already Ip and HOST values in the config file
-	else
-	{
-		//setup config path
-		pConfig->SetPath("/Controls");
-		//and read those values
-		hostname = pConfig->Read("m_IP");
-		port = pConfig->Read("m_PORT");
-
-		//and initiate the address by values from config file
-		addr->Hostname(hostname);
-		addr->Service(port);
-
-		/////////////////////////////////////////////////////////////////////
-		/// here we need to implement some function to delete existing config 
-		/// by some keys combination
-		/// /////////////////////////////////////////////////////////////////
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// TCP/IP part////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// TCP/IP part////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
 
    //  Create the socket
@@ -150,26 +78,199 @@ MainPanel::MainPanel(wxPanel* parent)
 
 	//connect to IPV4 type adress 
 	OpenConnection(wxSockAddress::IPV4);
-
-
-
 }
 
 
 MainPanel::~MainPanel()
 {
+	delete m_sock;
+}
+
+///////////////////////////////////////////////// IpPanel //////////////////////////////////////////////////
+/// ____________________________________________________________________________________________________ ///
+/// This panel will show up when no config file is present in the system, or in case when data stored in ///
+/// the config file are corrupted ---------------------------------------------------------------------- ///
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+IpPanel::IpPanel(wxPanel* parent)
+	: wxPanel(parent, -1, wxPoint(-1, -1), wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
+		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y)/5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
+{
+	m_ip_1 = new wxTextCtrl(this, -1, wxT(""), wxPoint(10, 20), wxSize(50, 50));
+	m_ip_1->SetBackgroundColour(wxColor(0, 50, 0));
+	m_ip_1->SetForegroundColour(wxColor(255, 255, 255));
+	
+	m_ip_2 = new wxTextCtrl(this, -1, wxT(""), wxPoint(70, 20), wxSize(50, 50));
+	m_ip_2->SetBackgroundColour(wxColor(0, 50, 0));
+	m_ip_2->SetForegroundColour(wxColor(255, 255, 255));
+	
+	m_ip_3 = new wxTextCtrl(this, -1, wxT(""), wxPoint(130, 20), wxSize(50, 50));
+	m_ip_3->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_3->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_4 = new wxTextCtrl(this, -1, wxT(""), wxPoint(190, 20), wxSize(50, 50));
+	m_ip_4->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_4->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_5 = new wxTextCtrl(this, -1, wxT(""), wxPoint(250, 20), wxSize(50, 50));
+	m_ip_5->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_5->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_6 = new wxTextCtrl(this, -1, wxT(""), wxPoint(310, 20), wxSize(50, 50));
+	m_ip_6->SetBackgroundColour(wxColor(0, 50, 0));
+	m_ip_6->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_7 = new wxTextCtrl(this, -1, wxT(""), wxPoint(370, 20), wxSize(50, 50));
+	m_ip_7->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_7->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_8 = new wxTextCtrl(this, -1, wxT(""), wxPoint(430, 20), wxSize(50, 50));
+	m_ip_8->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_8->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_9 = new wxTextCtrl(this, -1, wxT(""), wxPoint(490, 20), wxSize(50, 50));
+	m_ip_9->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_9->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_10 = new wxTextCtrl(this, -1, wxT(""), wxPoint(550, 20), wxSize(50, 50));
+	m_ip_10->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_10->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_11 = new wxTextCtrl(this, -1, wxT(""), wxPoint(610, 20), wxSize(50, 50));
+	m_ip_11->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_11->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_12 = new wxTextCtrl(this, -1, wxT(""), wxPoint(670, 20), wxSize(50, 50));
+	m_ip_12->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_12->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_13 = new wxTextCtrl(this, -1, wxT(""), wxPoint(10, 70), wxSize(50, 50));
+	m_ip_13->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_13->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_14 = new wxTextCtrl(this, -1, wxT(""), wxPoint(70, 70), wxSize(50, 50));
+	m_ip_14->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_14->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_15 = new wxTextCtrl(this, -1, wxT(""), wxPoint(130, 70), wxSize(50, 50));
+	m_ip_15->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_15->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_16 = new wxTextCtrl(this, -1, wxT(""), wxPoint(190, 70), wxSize(50, 50));
+	m_ip_16->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_16->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_17 = new wxTextCtrl(this, -1, wxT(""), wxPoint(250, 70), wxSize(50, 50));
+	m_ip_17->SetBackgroundColour(wxColor(0, 0, 0));
+	m_ip_17->SetForegroundColour(wxColor(255, 255, 255));
+
+	wxString ip_from_user = m_ip_1->GetValue() + m_ip_2->GetValue() + m_ip_3->GetValue() + "." 
+		+ m_ip_4->GetValue() + m_ip_5->GetValue() + m_ip_6->GetValue() + "."
+		+ m_ip_7->GetValue() + m_ip_8->GetValue() + m_ip_9->GetValue() + "."
+		+ m_ip_10->GetValue() + m_ip_11->GetValue() + m_ip_12->GetValue();
+	wxString port_from_user = m_ip_13->GetValue() + m_ip_14->GetValue() + m_ip_15->GetValue()
+		+ m_ip_16->GetValue() + m_ip_17->GetValue();
+
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	comm->hbox->Add(m_ip_17);
+
+	//m_text_ip = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
+	//m_text_ip->SetFont(*main_font);
+	//m_text_ip->SetForegroundColour(wxColor(255, 255, 255));
+	//m_text_ip->Show();
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//config
+	// restore the control's values from the config
+
+	// NB: in this program, the config object is already created at this moment
+	// because we had called Get() from MyApp::OnInit(). However, if you later
+	// change the code and don't create it before this line, it won't break
+	// anything - unlike if you manually create wxConfig object with Create()
+	// or in any other way (then you must be sure to create it before using it!).
+	wxConfigBase* pConfig = wxConfigBase::Get();
+	wxIPaddress* addr;
+	wxIPV4address addr4;
+	addr = &addr4;
+	//comm->m_mp->addr = &addr4;
+	//IP and PORT stored in registy->windows (/HKEY_CURRENT_USER/Software/YourVendor/YourApp)
+	// propably /user/lib/local/Skalarki on unix (or in the app root location)
+	// 
+
+	/*Set up the config directory*/
+	pConfig->SetPath("/Controls");
+
+	/*we need to check if there are already values stored in this location*/
+	/*If they are empty, reed them from the user*/
+
+	if (pConfig->Read("m_IP").IsEmpty() ||
+		pConfig->Read("m_PORT").IsEmpty())
+	{
+		Config_flag = true;
+		//// Ask user for server address
+		////m_text_ip->SetLabel("test");
+		//hostname = wxGetTextFromUser(
+		//	_("Enter the address of the server:"),
+		//	_("Connect ..."),
+		//	_("192.168.0.31"));
+		//if (hostname.empty())
+		//	return;
+
+		//// Ask user for server port
+		//port = wxGetTextFromUser(
+		//	_("Enter the Port of the server:"),
+		//	_("Connect ..."),
+		//	_("5060"));
+		//if (port.empty())
+		//	return;
+		///// <need some function for validation of ip adress and port values>
+		///// //////////////////////////////////////////////////////////////// ///
+		///// 
+		//pConfig->SetPath("/Controls");
+		///*write user defined values to the config file*/
+		//pConfig->Write("m_IP", hostname);
+		//pConfig->Write("m_PORT", port);
+
+		///*initiate adress ip and port by user defined values*/
+		//addr->Hostname(hostname);
+		//addr->Service(port);
+	}
+
+	//If there are already Ip and HOST values in the config file
+	else
+	{
+		Config_flag = false;
+		//setup config path
+		pConfig->SetPath("/Controls");
+		//and read those values
+		hostname = pConfig->Read("m_IP");
+		port = pConfig->Read("m_PORT");
+
+		//and initiate the address by values from config file
+		addr->Hostname(hostname);
+		addr->Service(port);
+
+		/////////////////////////////////////////////////////////////////////
+		/// here we need to implement some function to delete existing config 
+		/// by some keys combination
+		/// /////////////////////////////////////////////////////////////////
+	}
+}
+
+IpPanel::~IpPanel()
+{
+	/* communicate class to handle data transfer between the panels */
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+
 	wxConfigBase* pConfig = wxConfigBase::Get();
 	if (pConfig == NULL)
 		return;
-
+	
 	// save the control's values to the config
-	pConfig->Write("/Controls/m_IP", m_IP);
-	pConfig->Write("/Controls/m_PORT", m_PORT);
-
-	pConfig->Write("/TestValue", "A test va88");
-
-	delete m_sock;
+	pConfig->Write("/Controls/m_IP", hostname);
+	pConfig->Write("/Controls/m_PORT", port);
+	pConfig->Write("/TestValue", "A test va88");	
 }
+
 
 
 void MainPanel::OnSocketEvent(wxSocketEvent& event)
@@ -222,8 +323,27 @@ void MainPanel::OpenConnection(wxSockAddress::Family family)
 {
 	//wxUnusedVar(family); // unused in !wxUSE_IPV6 case
 
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	wxString m_IP;
+	wxString m_PORT;
 
+	//Define IP adrees
+	wxIPaddress* addr;
+	// and set it to IP adress type 4
+	wxIPV4address addr4;
+	addr = &addr4;
 
+	//Open the config file
+	wxConfigBase* pConfig = wxConfigBase::Get();
+	if (pConfig == NULL)
+		return;
+
+	// and read the control's values to the config
+	m_IP = pConfig->Read("/Controls/m_IP");
+	m_PORT = pConfig->Read("/Controls/m_PORT");
+
+	addr->Hostname(m_IP);
+	addr->Service(m_PORT);
 	//Save the IP and Host name to config file
 
 	m_sock->Connect(*addr, false);
@@ -253,10 +373,19 @@ void MainPanel::OpenConnection(wxSockAddress::Family family)
 
 void MainPanel::OnMsgPlus(wxCommandEvent& WXUNUSED(event))
 {
-
-	count_msg++;
-
 	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (comm->m_ip->Config_flag == true)
+	{
+		if (count_msg > 17)
+		{
+			count_msg = 17;
+		}
+		else count_msg++;
+	}
+
+
+	comm->m_ip->m_ip_1->SetFocus();
+
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_msg));
 	//send text to different text boxes
 	comm->m_mp->m_text_main->SetLabel(text_main);
@@ -264,12 +393,19 @@ void MainPanel::OnMsgPlus(wxCommandEvent& WXUNUSED(event))
 }
 
 
-
 void MainPanel::OnMsgMinus(wxCommandEvent& WXUNUSED(event))
 {
-	count_msg--;
-	text_main = ("MESSAGE MSG- RECEIVED");
 	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (comm->m_ip->Config_flag == true)
+	{
+		if (count_msg < 0)
+		{
+			count_msg = 0;
+		}
+		else count_msg--;
+	}
+	text_main = ("MESSAGE MSG- RECEIVED");
+	
 	//send text to different text boxes
 	comm->m_mp->m_text_main->SetLabel(text_main);
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_msg));
@@ -278,9 +414,19 @@ void MainPanel::OnMsgMinus(wxCommandEvent& WXUNUSED(event))
 
 void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
 {
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (comm->m_ip->Config_flag == true)
+	{
+		if (count_msg > 9)
+		{
+			count_msg = 9;
+		}
+		else count_msg++;
+	}
+
 	count_poe++;
 	text_main = ("MESSAGE PGE+ RECEIVED");
-	Communicate* comm = (Communicate*)m_parent->GetParent();
+	
 	//send text to different text boxes
 	comm->m_mp->m_text_main->SetLabel(text_main);
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_poe));
@@ -289,9 +435,19 @@ void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
 
 void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
 {
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (comm->m_ip->Config_flag == true)
+	{
+		if (count_msg < 0)
+		{
+			count_msg = 0;
+		}
+		else count_msg++;
+	}
+	
 	count_poe--;
 	text_main = ("MESSAGE PGE- RECEIVED");
-	Communicate* comm = (Communicate*)m_parent->GetParent();
+	
 	//send text to different text boxes
 	comm->m_mp->m_text_main->SetLabel(text_main);
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_poe));

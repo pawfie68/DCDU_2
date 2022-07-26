@@ -5,6 +5,8 @@
 
 //Panels, buttons, text boxes and events are initialized here
 
+
+
 class MainPanel : public wxPanel
 {
 public:
@@ -62,12 +64,54 @@ public:
     int count_msg;
     int count_poe;
 
+
+};
+
+///////////////////////////////////////////////// IpPanel //////////////////////////////////////////////////
+/// ____________________________________________________________________________________________________ ///
+/// This panel will show up when no config file is present in the system, or in case when data stored in ///
+/// the config file are corrupted ---------------------------------------------------------------------- ///
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class IpPanel : public wxPanel
+{
+public:
+
+    //MainPanel -> to top box of the screen
+    IpPanel(wxPanel* parent);
+    ~IpPanel();
+
+    //flag for switching key functions between config and normal 
+    bool Config_flag = true;
+
+    wxStaticText* m_text_ip;
+
     //sth to deal with cfg file
     wxString m_IP;
     wxString m_PORT;
-    wxIPaddress* addr;
-    wxIPV4address addr4;
-   
+
+    wxTextCtrl* m_ip_1;
+    wxTextCtrl* m_ip_2;
+    wxTextCtrl* m_ip_3;
+    wxTextCtrl* m_ip_4;
+    wxTextCtrl* m_ip_5;
+    wxTextCtrl* m_ip_6;
+    wxTextCtrl* m_ip_7;
+    wxTextCtrl* m_ip_8;
+    wxTextCtrl* m_ip_9;
+    wxTextCtrl* m_ip_10;
+    wxTextCtrl* m_ip_11;
+    wxTextCtrl* m_ip_12;
+    wxTextCtrl* m_ip_13;
+    wxTextCtrl* m_ip_14;
+    wxTextCtrl* m_ip_15;
+    wxTextCtrl* m_ip_16;
+    wxTextCtrl* m_ip_17;
+    wxTextCtrl* m_ip_18;
+
+
+    wxTextCtrl* m_ip_ctrl;
+    wxTextCtrl* m_port_ctrl;
     wxString hostname;
     wxString port;
 };

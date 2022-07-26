@@ -11,11 +11,14 @@ public:
     
     //declare all panels and parent panel
     MainPanel* m_mp;
+    IpPanel* m_ip;
     RightPanel* m_rp;
     LeftPanel* m_lp;
     MidlePanel* m_midp;
     PgCounterPanel* m_pgp;
     wxPanel* m_parent;
+
+    wxBoxSizer* hbox;
 
 private:
    // wxDECLARE_EVENT_TABLE()
