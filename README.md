@@ -42,7 +42,7 @@ Current status -> GUI is displaying correctly,
 3) Basic Network handlers are implemented, connections, read and write to the serwer works correctly,
 Received data are displayed on main panel. 
 4) Functions for data processing, need to be developed
-5) Handling of config file need to be aded, some code was already prepared. config.xml will be placed in main folder of the app, 
+Done -> (5) Handling of config file need to be aded, some code was already prepared. (config.ini on Unix / Registry-Keys on Windows)
 if alredy exist will be holding the IP adress and port of the server
 6) IP setup frame will be added soon,
 7) Button combination for initialization of IP setup frame will be added (MSG+ + left bottom button will fire the event)
