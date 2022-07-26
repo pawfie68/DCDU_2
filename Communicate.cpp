@@ -1,10 +1,6 @@
 #include "Communicate.h"
 #include <wx/statline.h>
 
-//#include <iostream>
-
-
-
 //this frame will cover whole screen of the LCD
 Communicate::Communicate(const wxString& title)
     : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition,

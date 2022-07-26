@@ -62,8 +62,14 @@ public:
     int count_msg;
     int count_poe;
 
-
-
+    //sth to deal with cfg file
+    wxString m_IP;
+    wxString m_PORT;
+    wxIPaddress* addr;
+    wxIPV4address addr4;
+   
+    wxString hostname;
+    wxString port;
 };
 
 

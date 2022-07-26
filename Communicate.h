@@ -8,7 +8,7 @@ class Communicate : public wxFrame
 {
 public:
     Communicate(const wxString& title);
-
+    
     //declare all panels and parent panel
     MainPanel* m_mp;
     RightPanel* m_rp;
