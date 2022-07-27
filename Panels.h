@@ -120,6 +120,8 @@ public:
     wxStaticText* dot3;
     wxStaticText* semicolon;
 
+    wxStaticText* ip_setup_desc;
+
     wxTextCtrl* m_ip_ctrl;
     wxTextCtrl* m_port_ctrl;
     wxString hostname;

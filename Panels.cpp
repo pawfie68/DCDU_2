@@ -127,7 +127,8 @@ IpPanel::IpPanel(wxPanel* parent)
 		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
 {
 	int start_position = wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2;
-
+	wxString description = "Use MSG+/MSG- buttons to chose subsequent values\n"  "use POE+/POE- to setup IP and host\n" 
+		"the empty space sign will appear when you go below 0";
 	ip_font = new wxFont(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
 
 	m_ip_1 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 330, 20), wxSize(35, 50), wxNO_BORDER);
@@ -241,6 +242,14 @@ IpPanel::IpPanel(wxPanel* parent)
 		+ m_ip_10->GetValue() + m_ip_11->GetValue() + m_ip_12->GetValue();
 	wxString port_from_user = m_ip_13->GetValue() + m_ip_14->GetValue() + m_ip_15->GetValue()
 		+ m_ip_16->GetValue() + m_ip_17->GetValue();
+
+
+	ip_setup_desc = new wxStaticText(this, -1, wxT(""), wxPoint(start_position - 500, 100), wxSize(400, 100), wxNO_BORDER);
+	ip_setup_desc->SetFont(*ip_font);
+	ip_setup_desc->SetBackgroundColour(wxColor(0, 0, 0));
+	ip_setup_desc->SetForegroundColour(wxColor(0, 200, 100));
+
+	ip_setup_desc->SetLabel(description);
 
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//comm->hbox->Add(m_ip_17);
