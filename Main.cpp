@@ -22,7 +22,7 @@ bool MyApp::OnInit()
         // of the config file/registry key and must be set before the first call
         // to Get() if you want to override the default values (the application
         // name is the name of the executable and the vendor name is the same)
-        SetVendorName("Skalarki");
+    SetVendorName("Skalarki");
     SetAppName("DCDU_config"); // not needed, it's the default value
 
     wxConfigBase* pConfig = wxConfigBase::Get();

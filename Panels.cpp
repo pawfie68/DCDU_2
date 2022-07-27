@@ -9,21 +9,23 @@
 #endif
 
 
+
+
 //MainPanel scaling with the screen resolution
 
 MainPanel::MainPanel(wxPanel* parent)
 	: wxPanel(parent, -1, wxPoint(-1, -1), wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
 		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3), /*wxBORDER_SUNKEN*/ wxNO_BORDER)
 {
+
 	//font setting
 	main_font = new wxFont(50, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
 	//counters for handling number of clicks -> for future use
-	count_msg = 0;
-	count_poe = 0;
+
 	//setting the parent for enabling communication between panels
 	m_parent = parent;
 	//display the standby message
-	m_text_main = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
+	m_text_main = new wxStaticText(this, -1, wxT(""), wxPoint(10, 20));
 	m_text_main->SetFont(*main_font);
 	m_text_main->SetForegroundColour(wxColor(255, 255, 255));
 
@@ -56,28 +58,56 @@ MainPanel::MainPanel(wxPanel* parent)
 	Connect(ID_POE_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(MainPanel::OnPOEMinus));
 
+	//Bind(wxEVT_COMMAND_BUTTON_CLICKED,
+	//	wxCommandEventHandler(MainPanel::OnButtonEvent), this);
+	//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+	//	wxCommandEventHandler(MainPanel::OnButtonEvent));
+	//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+	//	wxCommandEventHandler(MainPanel::OnButtonEvent));
+	//Connect(ID_MSG_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+	//	wxCommandEventHandler(MainPanel::OnButtonEvent));
+
 //////////////////////////////////////////////////////////////////////////
 // TCP/IP part////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
+	Communicate* comm = (Communicate*)m_parent->GetParent();
 
-   //  Create the socket
-	m_sock = new wxSocketClient();
+	if (comm->m_ip->Config_flag == false)
+	{
+		//  Create the socket
+		m_sock = new wxSocketClient();
 
 
-	//Setup the event handler and subscribe to most events
-	m_sock->SetEventHandler(*this, SOCKET_ID);
-	Connect(SOCKET_ID, wxEVT_SOCKET,
-		wxSocketEventHandler(MainPanel::OnSocketEvent));
+		//Setup the event handler and subscribe to most events
+		m_sock->SetEventHandler(*this, SOCKET_ID);
+		Connect(SOCKET_ID, wxEVT_SOCKET,
+			wxSocketEventHandler(MainPanel::OnSocketEvent));
 
-	//setup some flags to maintain socket events and enable notifications
-	m_sock->SetNotify(wxSOCKET_CONNECTION_FLAG |
-		wxSOCKET_INPUT_FLAG |
-		wxSOCKET_LOST_FLAG);
-	m_sock->Notify(true);
+		//setup some flags to maintain socket events and enable notifications
+		m_sock->SetNotify(wxSOCKET_CONNECTION_FLAG |
+			wxSOCKET_INPUT_FLAG |
+			wxSOCKET_LOST_FLAG);
+		m_sock->Notify(true);
 
-	//connect to IPV4 type adress 
-	OpenConnection(wxSockAddress::IPV4);
+		//connect to IPV4 type adress 
+		OpenConnection(wxSockAddress::IPV4);
+	}
+	else
+	{
+		comm->m_ip->SetFocus();
+		comm->m_ip->m_ip_2->SetFocus();
+		comm->m_ip->m_ip_3->SetFocus(); comm->m_ip->m_ip_3->SetFocus();
+		comm->m_ip->m_ip_5->SetFocus(); comm->m_ip->m_ip_6->SetFocus();
+		comm->m_ip->m_ip_7->SetFocus(); comm->m_ip->m_ip_8->SetFocus();
+		comm->m_ip->m_ip_9->SetFocus(); comm->m_ip->m_ip_10->SetFocus();
+		comm->m_ip->m_ip_11->SetFocus(); comm->m_ip->m_ip_12->SetFocus();
+		comm->m_ip->m_ip_13->SetFocus(); comm->m_ip->m_ip_14->SetFocus();
+		comm->m_ip->m_ip_15->SetFocus(); comm->m_ip->m_ip_16->SetFocus();
+		comm->m_ip->m_ip_17->SetFocus(); comm->m_ip->m_ip_1->SetFocus();
+
+	}
+
 }
 
 
@@ -94,77 +124,118 @@ MainPanel::~MainPanel()
 
 IpPanel::IpPanel(wxPanel* parent)
 	: wxPanel(parent, -1, wxPoint(-1, -1), wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
-		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y)/5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
+		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
 {
-	m_ip_1 = new wxTextCtrl(this, -1, wxT(""), wxPoint(10, 20), wxSize(50, 50));
-	m_ip_1->SetBackgroundColour(wxColor(0, 50, 0));
-	m_ip_1->SetForegroundColour(wxColor(255, 255, 255));
-	
-	m_ip_2 = new wxTextCtrl(this, -1, wxT(""), wxPoint(70, 20), wxSize(50, 50));
-	m_ip_2->SetBackgroundColour(wxColor(0, 50, 0));
-	m_ip_2->SetForegroundColour(wxColor(255, 255, 255));
-	
-	m_ip_3 = new wxTextCtrl(this, -1, wxT(""), wxPoint(130, 20), wxSize(50, 50));
-	m_ip_3->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_3->SetForegroundColour(wxColor(255, 255, 255));
+	int start_position = wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2;
 
-	m_ip_4 = new wxTextCtrl(this, -1, wxT(""), wxPoint(190, 20), wxSize(50, 50));
-	m_ip_4->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_4->SetForegroundColour(wxColor(255, 255, 255));
+	ip_font = new wxFont(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
 
-	m_ip_5 = new wxTextCtrl(this, -1, wxT(""), wxPoint(250, 20), wxSize(50, 50));
-	m_ip_5->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_5->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_1 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 330, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_1->SetFont(*ip_font);
+	m_ip_1->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_1->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_6 = new wxTextCtrl(this, -1, wxT(""), wxPoint(310, 20), wxSize(50, 50));
-	m_ip_6->SetBackgroundColour(wxColor(0, 50, 0));
-	m_ip_6->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_2 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 290, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_2->SetFont(*ip_font);
+	m_ip_2->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_2->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_7 = new wxTextCtrl(this, -1, wxT(""), wxPoint(370, 20), wxSize(50, 50));
-	m_ip_7->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_7->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_3 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 250, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_3->SetFont(*ip_font);
+	m_ip_3->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_3->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_8 = new wxTextCtrl(this, -1, wxT(""), wxPoint(430, 20), wxSize(50, 50));
-	m_ip_8->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_8->SetForegroundColour(wxColor(255, 255, 255));
+	dot1 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position - 215, 30), wxSize(5, 50), wxNO_BORDER);
+	dot1->SetFont(*ip_font);
+	dot1->SetBackgroundColour(wxColor(0, 0, 0));
+	dot1->SetForegroundColour(wxColor(255, 255, 255));
 
-	m_ip_9 = new wxTextCtrl(this, -1, wxT(""), wxPoint(490, 20), wxSize(50, 50));
-	m_ip_9->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_9->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_4 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 205, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_4->SetFont(*ip_font);
+	m_ip_4->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_4->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_10 = new wxTextCtrl(this, -1, wxT(""), wxPoint(550, 20), wxSize(50, 50));
-	m_ip_10->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_10->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_5 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 165, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_5->SetFont(*ip_font);
+	m_ip_5->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_5->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_11 = new wxTextCtrl(this, -1, wxT(""), wxPoint(610, 20), wxSize(50, 50));
-	m_ip_11->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_11->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_6 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 125, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_6->SetFont(*ip_font);
+	m_ip_6->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_6->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_12 = new wxTextCtrl(this, -1, wxT(""), wxPoint(670, 20), wxSize(50, 50));
-	m_ip_12->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_12->SetForegroundColour(wxColor(255, 255, 255));
+	dot2 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position - 90, 30), wxSize(5, 50), wxNO_BORDER);
+	dot2->SetFont(*ip_font);
+	dot2->SetBackgroundColour(wxColor(0, 0, 0));
+	dot2->SetForegroundColour(wxColor(255, 255, 255));
 
-	m_ip_13 = new wxTextCtrl(this, -1, wxT(""), wxPoint(10, 70), wxSize(50, 50));
-	m_ip_13->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_13->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_7 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 80, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_7->SetFont(*ip_font);
+	m_ip_7->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_7->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_14 = new wxTextCtrl(this, -1, wxT(""), wxPoint(70, 70), wxSize(50, 50));
-	m_ip_14->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_14->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_8 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 40, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_8->SetFont(*ip_font);
+	m_ip_8->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_8->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_15 = new wxTextCtrl(this, -1, wxT(""), wxPoint(130, 70), wxSize(50, 50));
-	m_ip_15->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_15->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_9 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_9->SetFont(*ip_font);
+	m_ip_9->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_9->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_16 = new wxTextCtrl(this, -1, wxT(""), wxPoint(190, 70), wxSize(50, 50));
-	m_ip_16->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_16->SetForegroundColour(wxColor(255, 255, 255));
+	dot2 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position + 35, 30), wxSize(5, 50), wxNO_BORDER);
+	dot2->SetFont(*ip_font);
+	dot2->SetBackgroundColour(wxColor(0, 0, 0));
+	dot2->SetForegroundColour(wxColor(255, 255, 255));
 
-	m_ip_17 = new wxTextCtrl(this, -1, wxT(""), wxPoint(250, 70), wxSize(50, 50));
-	m_ip_17->SetBackgroundColour(wxColor(0, 0, 0));
-	m_ip_17->SetForegroundColour(wxColor(255, 255, 255));
+	m_ip_10 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 45, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_10->SetFont(*ip_font);
+	m_ip_10->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_10->SetForegroundColour(wxColor(0, 0, 0));
 
-	wxString ip_from_user = m_ip_1->GetValue() + m_ip_2->GetValue() + m_ip_3->GetValue() + "." 
+	m_ip_11 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 85, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_11->SetFont(*ip_font);
+	m_ip_11->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_11->SetForegroundColour(wxColor(0, 0, 0));
+
+	m_ip_12 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 125, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_12->SetFont(*ip_font);
+	m_ip_12->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_12->SetForegroundColour(wxColor(0, 0, 0));
+
+	semicolon = new wxStaticText(this, -1, wxT(":"), wxPoint(start_position + 160, 20), wxSize(5, 50), wxNO_BORDER);
+	semicolon->SetFont(*ip_font);
+	semicolon->SetBackgroundColour(wxColor(0, 0, 0));
+	semicolon->SetForegroundColour(wxColor(255, 255, 255));
+
+	m_ip_13 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 175, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_13->SetFont(*ip_font);
+	m_ip_13->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_13->SetForegroundColour(wxColor(0, 0, 0));
+
+	m_ip_14 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 210, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_14->SetFont(*ip_font);
+	m_ip_14->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_14->SetForegroundColour(wxColor(0, 0, 0));
+
+	m_ip_15 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 245, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_15->SetFont(*ip_font);
+	m_ip_15->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_15->SetForegroundColour(wxColor(0, 0, 0));
+
+	m_ip_16 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 280, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_16->SetFont(*ip_font);
+	m_ip_16->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_16->SetForegroundColour(wxColor(0, 0, 0));
+
+	m_ip_17 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 315, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_17->SetFont(*ip_font);
+	m_ip_17->SetBackgroundColour(wxColor(0, 255, 0));
+	m_ip_17->SetForegroundColour(wxColor(0, 0, 0));
+
+	wxString ip_from_user = m_ip_1->GetValue() + m_ip_2->GetValue() + m_ip_3->GetValue() + "."
 		+ m_ip_4->GetValue() + m_ip_5->GetValue() + m_ip_6->GetValue() + "."
 		+ m_ip_7->GetValue() + m_ip_8->GetValue() + m_ip_9->GetValue() + "."
 		+ m_ip_10->GetValue() + m_ip_11->GetValue() + m_ip_12->GetValue();
@@ -172,7 +243,7 @@ IpPanel::IpPanel(wxPanel* parent)
 		+ m_ip_16->GetValue() + m_ip_17->GetValue();
 
 	Communicate* comm = (Communicate*)m_parent->GetParent();
-	comm->hbox->Add(m_ip_17);
+	//comm->hbox->Add(m_ip_17);
 
 	//m_text_ip = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
 	//m_text_ip->SetFont(*main_font);
@@ -206,6 +277,7 @@ IpPanel::IpPanel(wxPanel* parent)
 		pConfig->Read("m_PORT").IsEmpty())
 	{
 		Config_flag = true;
+		wxMessageBox("config flag true");
 		//// Ask user for server address
 		////m_text_ip->SetLabel("test");
 		//hostname = wxGetTextFromUser(
@@ -264,11 +336,11 @@ IpPanel::~IpPanel()
 	wxConfigBase* pConfig = wxConfigBase::Get();
 	if (pConfig == NULL)
 		return;
-	
+
 	// save the control's values to the config
 	pConfig->Write("/Controls/m_IP", hostname);
 	pConfig->Write("/Controls/m_PORT", port);
-	pConfig->Write("/TestValue", "A test va88");	
+	pConfig->Write("/TestValue", "A test va88");
 }
 
 
@@ -374,22 +446,36 @@ void MainPanel::OpenConnection(wxSockAddress::Family family)
 void MainPanel::OnMsgPlus(wxCommandEvent& WXUNUSED(event))
 {
 	Communicate* comm = (Communicate*)m_parent->GetParent();
+
+
 	if (comm->m_ip->Config_flag == true)
 	{
-		if (count_msg > 17)
+		//	comm->m_ip->count_msg = 5;
+		if (comm->m_ip->count_msg >= 17)
 		{
-			count_msg = 17;
+
+			comm->m_ip->count_msg = 17;
+			ButtonClicked();
 		}
-		else count_msg++;
+		else
+		{
+
+			comm->m_ip->count_msg++;
+			ButtonClicked();
+		}
+	}
+	else
+	{
+		comm->m_ip->m_ip_1->SetFocus();
+
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_msg));
+		//send text to different text boxes
+		comm->m_mp->m_text_main->SetLabel(text_main);
+		comm->m_midp->m_text_mid->SetLabel(text_main);
 	}
 
 
-	comm->m_ip->m_ip_1->SetFocus();
 
-	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_msg));
-	//send text to different text boxes
-	comm->m_mp->m_text_main->SetLabel(text_main);
-	comm->m_midp->m_text_mid->SetLabel(text_main);
 }
 
 
@@ -398,18 +484,30 @@ void MainPanel::OnMsgMinus(wxCommandEvent& WXUNUSED(event))
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	if (comm->m_ip->Config_flag == true)
 	{
-		if (count_msg < 0)
+		if (comm->m_ip->count_msg <= 1)
 		{
-			count_msg = 0;
+			comm->m_ip->count_msg = 1;
+			ButtonClicked();
 		}
-		else count_msg--;
+		else
+		{
+			comm->m_ip->count_msg--;
+			ButtonClicked();
+		}
+
 	}
-	text_main = ("MESSAGE MSG- RECEIVED");
-	
-	//send text to different text boxes
-	comm->m_mp->m_text_main->SetLabel(text_main);
-	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_msg));
-	comm->m_midp->m_text_mid->SetLabel(text_main);
+	else
+	{
+		text_main = ("MESSAGE MSG- RECEIVED");
+
+		//send text to different text boxes
+		comm->m_mp->m_text_main->SetLabel(text_main);
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_msg));
+		comm->m_midp->m_text_mid->SetLabel(text_main);
+
+	}
+
+
 }
 
 void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
@@ -417,20 +515,30 @@ void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	if (comm->m_ip->Config_flag == true)
 	{
-		if (count_msg > 9)
+		if (comm->m_ip->count_poe[comm->m_ip->count_msg] >= 9)
 		{
-			count_msg = 9;
+			comm->m_ip->count_poe[comm->m_ip->count_msg] = 9;
+			ButtonClicked();
 		}
-		else count_msg++;
+		else
+		{
+			comm->m_ip->count_poe[comm->m_ip->count_msg]++;
+			ButtonClicked();
+		}
+
+	}
+	else
+	{
+		//count_poe++;
+		text_main = ("MESSAGE PGE+ RECEIVED");
+
+		//send text to different text boxes
+		comm->m_mp->m_text_main->SetLabel(text_main);
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_poe));
+		comm->m_midp->m_text_mid->SetLabel(text_main);
 	}
 
-	count_poe++;
-	text_main = ("MESSAGE PGE+ RECEIVED");
-	
-	//send text to different text boxes
-	comm->m_mp->m_text_main->SetLabel(text_main);
-	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_poe));
-	comm->m_midp->m_text_mid->SetLabel(text_main);
+
 }
 
 void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
@@ -438,23 +546,280 @@ void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	if (comm->m_ip->Config_flag == true)
 	{
-		if (count_msg < 0)
+		if (comm->m_ip->count_poe[comm->m_ip->count_msg] <= -1)
 		{
-			count_msg = 0;
+			comm->m_ip->count_poe[comm->m_ip->count_msg] = -1;
+			ButtonClicked();
 		}
-		else count_msg++;
+		else
+		{
+			comm->m_ip->count_poe[comm->m_ip->count_msg]--;
+			ButtonClicked();
+		}
+
+
 	}
-	
-	count_poe--;
-	text_main = ("MESSAGE PGE- RECEIVED");
-	
-	//send text to different text boxes
-	comm->m_mp->m_text_main->SetLabel(text_main);
-	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_poe));
-	comm->m_midp->m_text_mid->SetLabel(text_main);
+	else
+	{
+		//count_poe--;
+		text_main = ("MESSAGE PGE- RECEIVED");
+
+		//send text to different text boxes
+		comm->m_mp->m_text_main->SetLabel(text_main);
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_poe));
+		comm->m_midp->m_text_mid->SetLabel(text_main);
+	}
+
+
 }
 
+void MainPanel::ButtonClicked()
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
 
+	if (comm->m_ip->Config_flag == true)
+	{
+		//char* s;
+		//s = wxString::Format(wxT("%i"), comm->m_ip->count_msg);
+		//wxMessageBox(s);
+
+		switch (comm->m_ip->count_msg)
+		{
+
+		case 1:
+			comm->m_ip->m_ip_1->SetFocus();
+
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_1->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_1->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+
+			break;
+
+		case 2:
+
+			comm->m_ip->m_ip_2->SetFocus();
+
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_2->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_2->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+		case 3:
+
+			comm->m_ip->m_ip_3->SetFocus();
+
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_3->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_3->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+		case 4:
+			comm->m_ip->m_ip_4->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_4->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_4->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 5:
+			comm->m_ip->m_ip_5->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_5->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_5->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 6:
+			comm->m_ip->m_ip_6->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_6->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_6->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 7:
+			comm->m_ip->m_ip_7->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_7->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_7->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 8:
+			comm->m_ip->m_ip_8->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_8->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_8->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 9:
+			comm->m_ip->m_ip_9->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_9->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_9->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 10:
+			comm->m_ip->m_ip_10->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_10->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_10->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 11:
+			comm->m_ip->m_ip_11->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_11->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_11->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 12:
+			comm->m_ip->m_ip_12->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_12->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_12->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 13:
+			comm->m_ip->m_ip_13->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_13->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_13->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 14:
+			comm->m_ip->m_ip_14->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_14->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_14->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 15:
+			comm->m_ip->m_ip_15->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_15->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_15->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 16:
+			comm->m_ip->m_ip_16->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_16->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_16->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 17:
+			comm->m_ip->m_ip_17->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_17->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_17->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		}
+	}
+}
+
+void MainPanel::OnButtonEvent(wxCommandEvent& WXUNUSED(event))
+{
+
+
+
+}
 
 //RightPanel setup
 

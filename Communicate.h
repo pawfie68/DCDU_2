@@ -8,7 +8,7 @@ class Communicate : public wxFrame
 {
 public:
     Communicate(const wxString& title);
-    
+
     //declare all panels and parent panel
     MainPanel* m_mp;
     IpPanel* m_ip;
@@ -21,15 +21,15 @@ public:
     wxBoxSizer* hbox;
 
 private:
-   // wxDECLARE_EVENT_TABLE()
+    // wxDECLARE_EVENT_TABLE()
 };
 
 enum
 {
-//    CLIENT_QUIT = wxID_EXIT,
-//    CLIENT_ABOUT = wxID_ABOUT,
-//    CLIENT_OPEN = 100,
-//    CLIENT_CLOSE,
+    //    CLIENT_QUIT = wxID_EXIT,
+    //    CLIENT_ABOUT = wxID_ABOUT,
+    //    CLIENT_OPEN = 100,
+    //    CLIENT_CLOSE,
     SOCKET_ID
 };
 

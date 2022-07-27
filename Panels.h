@@ -22,7 +22,9 @@ public:
     void OnMsgMinus(wxCommandEvent& event);
     void OnPOEPlus(wxCommandEvent& event);
     void OnPOEMinus(wxCommandEvent& event);
+    void OnButtonEvent(wxCommandEvent& event);
 
+    void ButtonClicked();
 
     //     void OnButtonCombination(wxCommandEvent& event);
     //buttons for simulating the operation of the device
@@ -50,19 +52,17 @@ public:
 
     // event handlers for Socket menu
     // when connection is established
-        void OnOpenConnection(wxCommandEvent& event);
+    void OnOpenConnection(wxCommandEvent& event);
     //when data arrived
-        void OnSocketEvent(wxSocketEvent& event);
-    
+    void OnSocketEvent(wxSocketEvent& event);
+
     //open connection with specified parameters
-        void OpenConnection(wxSockAddress::Family family);
+    void OpenConnection(wxSockAddress::Family family);
 
     const unsigned char len = 32;
-   
-  
-    //some counters dot
-    int count_msg;
-    int count_poe;
+
+
+
 
 
 };
@@ -80,6 +80,12 @@ public:
     //MainPanel -> to top box of the screen
     IpPanel(wxPanel* parent);
     ~IpPanel();
+
+
+    //some counters dot
+    char count_msg = 1;
+    //char count_poe = -1;
+    char count_poe[18];
 
     //flag for switching key functions between config and normal 
     bool Config_flag = true;
@@ -109,11 +115,18 @@ public:
     wxTextCtrl* m_ip_17;
     wxTextCtrl* m_ip_18;
 
+    wxStaticText* dot1;
+    wxStaticText* dot2;
+    wxStaticText* dot3;
+    wxStaticText* semicolon;
 
     wxTextCtrl* m_ip_ctrl;
     wxTextCtrl* m_port_ctrl;
     wxString hostname;
     wxString port;
+
+
+    wxFont* ip_font;
 };
 
 
@@ -137,7 +150,7 @@ public:
     wxStaticText* m_text_r;
     //some counters dot
     int count_r;
-    
+
     // font for handling custon fonts for right screen
     wxFont* right_font;
 
@@ -148,7 +161,7 @@ public:
 
 class LeftPanel : public wxPanel
 {
-public: 
+public:
     //LeftPanel -> to Left bottom box of the screen
     LeftPanel(wxPanel* parent);
 
@@ -195,7 +208,7 @@ public:
 class PgCounterPanel : public wxPanel
 {
 public:
-    
+
     //PgCounterPanel -> additional panel placed at right bottom of 
     //midle panel for displaing of page numbers
 
