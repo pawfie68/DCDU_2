@@ -36,6 +36,7 @@ MainPanel::MainPanel(wxPanel* parent)
 	msg_plus->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_MSG_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(MainPanel::OnMsgPlus));
+
 	//creating button for MSG- and connect it to the proper event
 	msg_minus = new wxButton(this, ID_MSG_MINUS, wxT("MSG-"),
 		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 50));
@@ -43,70 +44,88 @@ MainPanel::MainPanel(wxPanel* parent)
 	msg_minus->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(MainPanel::OnMsgMinus));
-	//creating button for POE+ and connect it to the proper event
-	m_POE_plus = new wxButton(this, ID_POE_PLUS, wxT("PGE +"),
-		wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 100));
-	m_POE_plus->SetBackgroundColour(wxColor(110, 110, 110));
-	m_POE_plus->SetForegroundColour(wxColor(*wxWHITE));
-	Connect(ID_POE_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-		wxCommandEventHandler(MainPanel::OnPOEPlus));
-	//creating button for POE+ and connect it to the proper event
-	m_POE_minus = new wxButton(this, ID_POE_MINUS, wxT("PGE -"),
-		wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 50));
-	m_POE_minus->SetBackgroundColour(wxColor(110, 110, 110));
-	m_POE_minus->SetForegroundColour(wxColor(*wxWHITE));
-	Connect(ID_POE_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-		wxCommandEventHandler(MainPanel::OnPOEMinus));
 
-	//Bind(wxEVT_COMMAND_BUTTON_CLICKED,
-	//	wxCommandEventHandler(MainPanel::OnButtonEvent), this);
-	//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-	//	wxCommandEventHandler(MainPanel::OnButtonEvent));
-	//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-	//	wxCommandEventHandler(MainPanel::OnButtonEvent));
-	//Connect(ID_MSG_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-	//	wxCommandEventHandler(MainPanel::OnButtonEvent));
+	//creating button for POE+ and connect it to the proper event
+m_POE_plus = new wxButton(this, ID_POE_PLUS, wxT("PGE +"),
+	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 100));
+m_POE_plus->SetBackgroundColour(wxColor(110, 110, 110));
+m_POE_plus->SetForegroundColour(wxColor(*wxWHITE));
+Connect(ID_POE_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+	wxCommandEventHandler(MainPanel::OnPOEPlus));
+
+//creating button for POE+ and connect it to the proper event
+m_POE_minus = new wxButton(this, ID_POE_MINUS, wxT("PGE -"),
+	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 50));
+m_POE_minus->SetBackgroundColour(wxColor(110, 110, 110));
+m_POE_minus->SetForegroundColour(wxColor(*wxWHITE));
+Connect(ID_POE_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+	wxCommandEventHandler(MainPanel::OnPOEMinus));
+
+
+//creating button for POE+ and connect it to the proper event
+m_print = new wxButton(this, ID_PRINT, wxT("PRINT"),
+	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, 50));
+m_print->SetBackgroundColour(wxColor(110, 110, 110));
+m_print->SetForegroundColour(wxColor(*wxWHITE));
+Connect(ID_PRINT, wxEVT_COMMAND_BUTTON_CLICKED,
+	wxCommandEventHandler(MainPanel::OnPrintEvent));
+
+Connect(ID_COMBINED, wxEVT_COMMAND_BUTTON_CLICKED,
+	wxCommandEventHandler(MainPanel::OnPrintEvent));
+//ID_COMBINED
+
+
+//Bind(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainPanel::OnFourButtons), );
+
+//Bind(wxEVT_COMMAND_BUTTON_CLICKED,
+//	wxCommandEventHandler(MainPanel::OnButtonEvent), this);
+//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+//	wxCommandEventHandler(MainPanel::OnButtonEvent));
+//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+//	wxCommandEventHandler(MainPanel::OnButtonEvent));
+//Connect(ID_MSG_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+//	wxCommandEventHandler(MainPanel::OnButtonEvent));
 
 //////////////////////////////////////////////////////////////////////////
 // TCP/IP part////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-	Communicate* comm = (Communicate*)m_parent->GetParent();
+Communicate* comm = (Communicate*)m_parent->GetParent();
 
-	if (comm->m_ip->Config_flag == false)
-	{
-		//  Create the socket
-		m_sock = new wxSocketClient();
+if (comm->m_ip->Config_flag == false)
+{
+	//  Create the socket
+	m_sock = new wxSocketClient();
 
 
-		//Setup the event handler and subscribe to most events
-		m_sock->SetEventHandler(*this, SOCKET_ID);
-		Connect(SOCKET_ID, wxEVT_SOCKET,
-			wxSocketEventHandler(MainPanel::OnSocketEvent));
+	//Setup the event handler and subscribe to most events
+	m_sock->SetEventHandler(*this, SOCKET_ID);
+	Connect(SOCKET_ID, wxEVT_SOCKET,
+		wxSocketEventHandler(MainPanel::OnSocketEvent));
 
-		//setup some flags to maintain socket events and enable notifications
-		m_sock->SetNotify(wxSOCKET_CONNECTION_FLAG |
-			wxSOCKET_INPUT_FLAG |
-			wxSOCKET_LOST_FLAG);
-		m_sock->Notify(true);
+	//setup some flags to maintain socket events and enable notifications
+	m_sock->SetNotify(wxSOCKET_CONNECTION_FLAG |
+		wxSOCKET_INPUT_FLAG |
+		wxSOCKET_LOST_FLAG);
+	m_sock->Notify(true);
 
-		//connect to IPV4 type adress 
-		OpenConnection(wxSockAddress::IPV4);
-	}
-	else
-	{
-		comm->m_ip->SetFocus();
-		comm->m_ip->m_ip_2->SetFocus();
-		comm->m_ip->m_ip_3->SetFocus(); comm->m_ip->m_ip_3->SetFocus();
-		comm->m_ip->m_ip_5->SetFocus(); comm->m_ip->m_ip_6->SetFocus();
-		comm->m_ip->m_ip_7->SetFocus(); comm->m_ip->m_ip_8->SetFocus();
-		comm->m_ip->m_ip_9->SetFocus(); comm->m_ip->m_ip_10->SetFocus();
-		comm->m_ip->m_ip_11->SetFocus(); comm->m_ip->m_ip_12->SetFocus();
-		comm->m_ip->m_ip_13->SetFocus(); comm->m_ip->m_ip_14->SetFocus();
-		comm->m_ip->m_ip_15->SetFocus(); comm->m_ip->m_ip_16->SetFocus();
-		comm->m_ip->m_ip_17->SetFocus(); comm->m_ip->m_ip_1->SetFocus();
+	//connect to IPV4 type adress 
+	OpenConnection(wxSockAddress::IPV4);
+}
+else
+{
+	comm->m_ip->SetFocus();
+	comm->m_ip->m_ip_2->SetFocus();
+	comm->m_ip->m_ip_3->SetFocus(); comm->m_ip->m_ip_3->SetFocus();
+	comm->m_ip->m_ip_5->SetFocus(); comm->m_ip->m_ip_6->SetFocus();
+	comm->m_ip->m_ip_7->SetFocus(); comm->m_ip->m_ip_8->SetFocus();
+	comm->m_ip->m_ip_9->SetFocus(); comm->m_ip->m_ip_10->SetFocus();
+	comm->m_ip->m_ip_11->SetFocus(); comm->m_ip->m_ip_12->SetFocus();
+	comm->m_ip->m_ip_13->SetFocus(); comm->m_ip->m_ip_14->SetFocus();
+	comm->m_ip->m_ip_15->SetFocus(); comm->m_ip->m_ip_16->SetFocus();
+	comm->m_ip->m_ip_17->SetFocus(); comm->m_ip->m_ip_1->SetFocus();
 
-	}
+}
 
 }
 
@@ -123,25 +142,133 @@ MainPanel::~MainPanel()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 IpPanel::IpPanel(wxPanel* parent)
-	: wxPanel(parent, -1, wxPoint(-1, -1), wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
-		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
+	: wxPanel(parent, -1, wxPoint((wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2 - wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4), -1),
+		wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2,
+			wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
 {
-	int start_position = wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2;
-	wxString description = "Use MSG+/MSG- buttons to chose subsequent values\n"  "use POE+/POE- to setup IP and host\n" 
-		"the empty space sign will appear when you go below 0";
+	wxConfigBase* pConfig = wxConfigBase::Get();
+
+	wxString ip_from_cfg;
+	wxString port_from_cfg;
+	
+	ip_from_cfg = pConfig->Read("/Controls/m_IP");
+	port_from_cfg = pConfig->Read("/Controls/m_PORT");
+
+	//wxMessageBox(ip_from_cfg, port_from_cfg);
+
+	wxChar ip_to_display[18];
+	wxChar port_to_dispaly[8];
+
+	bool e_read_cfg_ip = false;
+	bool e_read_cfg_port = false;
+
+	//zero base indexes of dots in IP adress from config
+	int first_dot_i = 0, second_dot_i = 0, third_dot_i = 0;
+
+	//some int variable to define difference in size between string readed from cfg file
+	//to size of buffer [18] char, fill with ' ' sign
+	int lengthen_cfg_str;
+	lengthen_cfg_str = wxStrlen(ip_from_cfg);
+	
+	for (int inee = lengthen_cfg_str; inee <= 18; inee++)
+	{
+		ip_from_cfg.append(' ');
+		lengthen_cfg_str = wxStrlen(ip_from_cfg);
+		
+	}
+
+	//to be sure not to work on empty string
+
+	if (ip_from_cfg.Length() > 0)
+	{
+		// some local iterators
+
+		int i = 0, j = 0, dot_count = 0;
+		
+		//main loop to fill all necessery spaces in the buffer with proper signs from cfg file
+		for (wxString::const_iterator it = ip_from_cfg.begin(); it != ip_from_cfg.end()-5; it++)
+		{
+			//if dot is present two places earlier tha should, we would like to make sure this doesnt hapend at any point of IP adress
+			if ((i <= 1 && ip_from_cfg[i] == '.') ||
+				(i > 2 && i <= 6 && (ip_from_cfg[i] == '.')) && j >= 5  && dot_count == 1||
+				(i > 6 && i <= 11 && (ip_from_cfg[i] == '.')) &&j >= 11 && dot_count == 2)
+			{
+				//dot_count told us how many dots are present in the buffer
+				dot_count++;
+
+				//add null value to the current index
+				ip_to_display[j] = NULL;
+				//set null value at second index 
+				ip_to_display[j + 1] = NULL;
+				//and then place the dot in proper place
+				ip_to_display[j + 2] = ip_from_cfg[i];
+
+				//and set all indexers at correct value;
+				j += 3;
+				i++;
+			}
+				//check if the '.' is present in the IP one place erlier than should
+				else if ((i > 1 && i <= 2 && ip_from_cfg[i] == '.' ) ||
+					(i > 2 && i <= 6 && ip_from_cfg[i] == '.') ||
+					(i > 6 && i <= 11 && ip_from_cfg[i] == '.' ))
+				{
+					//dot_count told us how many dots are present in the buffer
+					dot_count++;
+					//set value at current index as null 
+					ip_to_display[j] = NULL;
+					//and then place the dot in place
+					ip_to_display[j+1] = ip_from_cfg[i];
+					
+					//and set all indexers at correct value;
+					j += 2;
+					i++;
+				}
+			//Then change empty spaces added before to NULL values
+				else if (ip_from_cfg[i] == ' ')
+			{
+				ip_to_display[j] = NULL;
+				//and shift indexes
+				i++;
+				j++;
+			}
+				
+			//In normal case, just place values from cfg file in place
+				else
+				{
+					ip_to_display[j] = ip_from_cfg[i];
+					//and ofc shift the iterators
+					i++;
+					j++;
+				}
+				
+			
+	
+		}
+
+	}//and error to handle if case if sth goes wrong
+	else e_read_cfg_ip = true;
+
+
+	
+	//a = ip_from_cfg[2];
+	int start_position = wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4;
+	wxString description = "<- [MSG-] / [MSG+] -> \n"  "+value [POE+] \n -value [POE-] \n" 
+		"sign empty under the 0\n"
+		"[PRINT] - save IP/HOST";
 	ip_font = new wxFont(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
 
-	m_ip_1 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 330, 20), wxSize(35, 50), wxNO_BORDER);
+
+	m_ip_1 = new wxTextCtrl(this, -1, ip_to_display[0], wxPoint(start_position - 330, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_1->SetFont(*ip_font);
 	m_ip_1->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_1->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_2 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 290, 20), wxSize(35, 50), wxNO_BORDER);
+	
+	m_ip_2 = new wxTextCtrl(this, -1, ip_to_display[1], wxPoint(start_position - 290, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_2->SetFont(*ip_font);
 	m_ip_2->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_2->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_3 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 250, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_3 = new wxTextCtrl(this, -1, ip_to_display[2], wxPoint(start_position - 250, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_3->SetFont(*ip_font);
 	m_ip_3->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_3->SetForegroundColour(wxColor(0, 0, 0));
@@ -151,17 +278,17 @@ IpPanel::IpPanel(wxPanel* parent)
 	dot1->SetBackgroundColour(wxColor(0, 0, 0));
 	dot1->SetForegroundColour(wxColor(255, 255, 255));
 
-	m_ip_4 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 205, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_4 = new wxTextCtrl(this, -1, ip_to_display[4], wxPoint(start_position - 205, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_4->SetFont(*ip_font);
 	m_ip_4->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_4->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_5 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 165, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_5 = new wxTextCtrl(this, -1, ip_to_display[5], wxPoint(start_position - 165, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_5->SetFont(*ip_font);
 	m_ip_5->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_5->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_6 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 125, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_6 = new wxTextCtrl(this, -1, ip_to_display[6], wxPoint(start_position - 125, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_6->SetFont(*ip_font);
 	m_ip_6->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_6->SetForegroundColour(wxColor(0, 0, 0));
@@ -171,17 +298,17 @@ IpPanel::IpPanel(wxPanel* parent)
 	dot2->SetBackgroundColour(wxColor(0, 0, 0));
 	dot2->SetForegroundColour(wxColor(255, 255, 255));
 
-	m_ip_7 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 80, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_7 = new wxTextCtrl(this, -1, ip_to_display[8], wxPoint(start_position - 80, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_7->SetFont(*ip_font);
 	m_ip_7->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_7->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_8 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position - 40, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_8 = new wxTextCtrl(this, -1, ip_to_display[9], wxPoint(start_position - 40, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_8->SetFont(*ip_font);
 	m_ip_8->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_8->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_9 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_9 = new wxTextCtrl(this, -1, ip_to_display[10], wxPoint(start_position, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_9->SetFont(*ip_font);
 	m_ip_9->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_9->SetForegroundColour(wxColor(0, 0, 0));
@@ -191,17 +318,17 @@ IpPanel::IpPanel(wxPanel* parent)
 	dot2->SetBackgroundColour(wxColor(0, 0, 0));
 	dot2->SetForegroundColour(wxColor(255, 255, 255));
 
-	m_ip_10 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 45, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_10 = new wxTextCtrl(this, -1, ip_to_display[12], wxPoint(start_position + 45, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_10->SetFont(*ip_font);
 	m_ip_10->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_10->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_11 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 85, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_11 = new wxTextCtrl(this, -1, ip_to_display[13], wxPoint(start_position + 85, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_11->SetFont(*ip_font);
 	m_ip_11->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_11->SetForegroundColour(wxColor(0, 0, 0));
 
-	m_ip_12 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 125, 20), wxSize(35, 50), wxNO_BORDER);
+	m_ip_12 = new wxTextCtrl(this, -1, ip_to_display[14], wxPoint(start_position + 125, 20), wxSize(35, 50), wxNO_BORDER);
 	m_ip_12->SetFont(*ip_font);
 	m_ip_12->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_12->SetForegroundColour(wxColor(0, 0, 0));
@@ -236,13 +363,8 @@ IpPanel::IpPanel(wxPanel* parent)
 	m_ip_17->SetBackgroundColour(wxColor(0, 255, 0));
 	m_ip_17->SetForegroundColour(wxColor(0, 0, 0));
 
-	wxString ip_from_user = m_ip_1->GetValue() + m_ip_2->GetValue() + m_ip_3->GetValue() + "."
-		+ m_ip_4->GetValue() + m_ip_5->GetValue() + m_ip_6->GetValue() + "."
-		+ m_ip_7->GetValue() + m_ip_8->GetValue() + m_ip_9->GetValue() + "."
-		+ m_ip_10->GetValue() + m_ip_11->GetValue() + m_ip_12->GetValue();
-	wxString port_from_user = m_ip_13->GetValue() + m_ip_14->GetValue() + m_ip_15->GetValue()
-		+ m_ip_16->GetValue() + m_ip_17->GetValue();
 
+	//Communicate* comm = (Communicate*)m_parent->GetParent();
 
 	ip_setup_desc = new wxStaticText(this, -1, wxT(""), wxPoint(start_position - 500, 100), wxSize(400, 100), wxNO_BORDER);
 	ip_setup_desc->SetFont(*ip_font);
@@ -251,7 +373,6 @@ IpPanel::IpPanel(wxPanel* parent)
 
 	ip_setup_desc->SetLabel(description);
 
-	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//comm->hbox->Add(m_ip_17);
 
 	//m_text_ip = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
@@ -267,7 +388,7 @@ IpPanel::IpPanel(wxPanel* parent)
 	// change the code and don't create it before this line, it won't break
 	// anything - unlike if you manually create wxConfig object with Create()
 	// or in any other way (then you must be sure to create it before using it!).
-	wxConfigBase* pConfig = wxConfigBase::Get();
+	
 	wxIPaddress* addr;
 	wxIPV4address addr4;
 	addr = &addr4;
@@ -319,7 +440,10 @@ IpPanel::IpPanel(wxPanel* parent)
 	//If there are already Ip and HOST values in the config file
 	else
 	{
-		Config_flag = false;
+		//////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!?////////////////
+		///!!!HERE SWITCH ON CONNECTION BY SETTING CONFIG_FLAG false!!!!!!!#!##!!#####################################################
+		/// 
+		///Config_flag = false;
 		//setup config path
 		pConfig->SetPath("/Controls");
 		//and read those values
@@ -352,6 +476,63 @@ IpPanel::~IpPanel()
 	pConfig->Write("/TestValue", "A test va88");
 }
 
+void MainPanel::OnMultiButtons()
+{
+	wxMessageBox("sdasasd");
+}
+
+void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
+{
+	wxString ip_from_user;
+	wxString port_from_user;
+	//wxIPV4address adr;
+
+	wxConfigBase* pConfig = wxConfigBase::Get();
+	wxIPaddress* addr;
+	wxIPV4address addr4;
+	addr = &addr4;
+
+	/* communicate class to handle data transfer between the panels */
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	//after PRINT button clicked, check every part of IP adrees, if empty get back to typing
+	int i = comm->m_ip->m_ip_1->GetValue().Length() + comm->m_ip->m_ip_2->GetValue().Length() + comm->m_ip->m_ip_3->GetValue().Length();
+	wxMessageBox(wxString::Format(wxT("%ld"), i));
+	if ((comm->m_ip->m_ip_1->GetValue().Length() + comm->m_ip->m_ip_2->GetValue().Length() + comm->m_ip->m_ip_3->GetValue().Length()) == 0 ||
+		(comm->m_ip->m_ip_4->GetValue().Length() + comm->m_ip->m_ip_5->GetValue().Length() + comm->m_ip->m_ip_6->GetValue().Length()) == 0 ||
+		(comm->m_ip->m_ip_7->GetValue().Length() + comm->m_ip->m_ip_8->GetValue().Length() + comm->m_ip->m_ip_9->GetValue().Length()) == 0 ||
+		(comm->m_ip->m_ip_10->GetValue().Length() + comm->m_ip->m_ip_11->GetValue().Length() + comm->m_ip->m_ip_12->GetValue().Length()) == 0 ||
+		(comm->m_ip->m_ip_13->GetValue().Length() + comm->m_ip->m_ip_14->GetValue().Length() + comm->m_ip->m_ip_15->GetValue().Length() +
+		comm->m_ip->m_ip_16->GetValue().Length() + comm->m_ip->m_ip_17->GetValue().Length() == 0))
+	{
+		wxMessageBox("Typed IPv4 adrees or PORT contain empty elements, please provide valid adress");
+	}
+	else
+	{
+		ip_from_user = comm->m_ip->m_ip_1->GetValue() + comm->m_ip->m_ip_2->GetValue() + comm->m_ip->m_ip_3->GetValue() + "."
+			+ comm->m_ip->m_ip_4->GetValue() + comm->m_ip->m_ip_5->GetValue() + comm->m_ip->m_ip_6->GetValue() + "."
+			+ comm->m_ip->m_ip_7->GetValue() + comm->m_ip->m_ip_8->GetValue() + comm->m_ip->m_ip_9->GetValue() + "."
+			+ comm->m_ip->m_ip_10->GetValue() + comm->m_ip->m_ip_11->GetValue() + comm->m_ip->m_ip_12->GetValue();
+		port_from_user = comm->m_ip->m_ip_13->GetValue() + comm->m_ip->m_ip_14->GetValue() + comm->m_ip->m_ip_15->GetValue()
+			+ comm->m_ip->m_ip_16->GetValue() + comm->m_ip->m_ip_17->GetValue();
+		
+		addr->Hostname(ip_from_user);
+		addr->Service(port_from_user);
+
+		pConfig->Write("/Controls/m_IP", ip_from_user);
+		pConfig->Write("/Controls/m_PORT", port_from_user);
+
+		if (pConfig->Read("/Controls/m_IP") == ip_from_user && pConfig->Read("/Controls/m_PORT") == port_from_user)
+		{
+			wxMessageBox("Values succesfully saved");
+			comm->m_ip->hostname = ip_from_user;
+			comm->m_ip->port = port_from_user;
+			comm->m_ip->Config_flag = false;
+			//comm->m_ip->~IpPanel();
+		}
+		
+	}
+	
+}
 
 
 void MainPanel::OnSocketEvent(wxSocketEvent& event)
@@ -582,21 +763,21 @@ void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
 
 }
 
+
+
 void MainPanel::ButtonClicked()
 {
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 
 	if (comm->m_ip->Config_flag == true)
 	{
-		//char* s;
-		//s = wxString::Format(wxT("%i"), comm->m_ip->count_msg);
-		//wxMessageBox(s);
 
 		switch (comm->m_ip->count_msg)
 		{
 
 		case 1:
 			comm->m_ip->m_ip_1->SetFocus();
+			
 
 			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
 			{
@@ -606,7 +787,7 @@ void MainPanel::ButtonClicked()
 			{
 				comm->m_ip->m_ip_1->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
 			}
-
+			
 			break;
 
 		case 2:
@@ -909,10 +1090,9 @@ void RightPanel::OnRightDown(wxCommandEvent& WXUNUSED(event))
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_r));
 	comm->m_midp->m_text_mid->SetLabel(text_r);
 
-	/// proceed with menue on right button + F1 later
-	/// /
-	/// if (wxGetKeyState(WXK_F1)) wxMessageBox("key 1");
-	/// 
+	
+	if (wxGetKeyState(WXK_F1)) comm->m_mp->OnMultiButtons();
+	
 
 }
 

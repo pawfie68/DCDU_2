@@ -23,7 +23,8 @@ public:
     void OnPOEPlus(wxCommandEvent& event);
     void OnPOEMinus(wxCommandEvent& event);
     void OnButtonEvent(wxCommandEvent& event);
-
+    void OnPrintEvent(wxCommandEvent& event);
+    void OnMultiButtons();
     void ButtonClicked();
 
     //     void OnButtonCombination(wxCommandEvent& event);
@@ -32,6 +33,7 @@ public:
     wxButton* msg_minus;
     wxButton* m_POE_plus;
     wxButton* m_POE_minus;
+    wxButton* m_print;
 
     //text box for main window
     wxStaticText* m_text_main;
@@ -234,8 +236,10 @@ const int ID_MSG_PLUS = 101;
 const int ID_MSG_MINUS = 102;
 const int ID_POE_PLUS = 103;
 const int ID_POE_MINUS = 104;
-const int ID_LU = 105;
-const int ID_LD = 106;
-const int ID_RU = 107;
-const int ID_RD = 108;
+const int ID_PRINT = 105;
+const int ID_LU = 106;
+const int ID_LD = 107;
+const int ID_RU = 108;
+const int ID_RD = 109;
+const int ID_COMBINED = 110;
 
