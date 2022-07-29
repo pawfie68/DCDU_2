@@ -52,6 +52,9 @@ public:
     wxSockAddress* m_adress;
 
 
+    wxIPaddress* addr;
+    wxIPV4address addr4;
+
     // event handlers for Socket menu
     // when connection is established
     void OnOpenConnection(wxCommandEvent& event);
@@ -64,7 +67,8 @@ public:
     const unsigned char len = 32;
 
 
-
+  //  wxIPaddress* addr;
+   // wxIPV4address addr4;
 
 
 };
@@ -83,9 +87,34 @@ public:
     IpPanel(wxPanel* parent);
     ~IpPanel();
 
-
-    //some counters dot
     char count_msg = 1;
+    //some counters to deal with the settings of every single digits of IP, this could be done by array, 
+    //but then another values to store the current position will be needed so ill keep it this way for now
+    //char count_msg_1 = 0;
+    //char count_msg_2 = 0;
+    //char count_msg_3 = 0;
+    ////and dot here
+    //char count_msg_5 = 0;
+    //char count_msg_6 = 0;
+    //char count_msg_7 = 0;
+    ////and dot here
+    //char count_msg_9 = 0;
+    //char count_msg_10 = 0;
+    //char count_msg_11 = 0;
+    ////and dot here
+    //char count_msg_13 = 0;
+    //char count_msg_14 = 0;
+    //char count_msg_15 = 0;
+    ////and semicolon here
+    //char count_msg_17 = 0;
+    //char count_msg_18 = 0;
+    //char count_msg_19 = 0;
+    //char count_msg_20 = 0;
+    //char count_msg_21 = 0;
+
+    char ip_to_display[50];
+    char port_to_dispaly[8];
+
     //char count_poe = -1;
     char count_poe[18];
 

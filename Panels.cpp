@@ -90,27 +90,30 @@ Connect(ID_COMBINED, wxEVT_COMMAND_BUTTON_CLICKED,
 // TCP/IP part////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
+//  Create the socket
+m_sock = new wxSocketClient();
+
+
+//Setup the event handler and subscribe to most events
+m_sock->SetEventHandler(*this, SOCKET_ID);
+Connect(SOCKET_ID, wxEVT_SOCKET,
+	wxSocketEventHandler(MainPanel::OnSocketEvent));
+
+//setup some flags to maintain socket events and enable notifications
+m_sock->SetNotify(wxSOCKET_CONNECTION_FLAG |
+	wxSOCKET_INPUT_FLAG |
+	wxSOCKET_LOST_FLAG);
+m_sock->Notify(true);
+
+
 Communicate* comm = (Communicate*)m_parent->GetParent();
 
 if (comm->m_ip->Config_flag == false)
 {
-	//  Create the socket
-	m_sock = new wxSocketClient();
-
-
-	//Setup the event handler and subscribe to most events
-	m_sock->SetEventHandler(*this, SOCKET_ID);
-	Connect(SOCKET_ID, wxEVT_SOCKET,
-		wxSocketEventHandler(MainPanel::OnSocketEvent));
-
-	//setup some flags to maintain socket events and enable notifications
-	m_sock->SetNotify(wxSOCKET_CONNECTION_FLAG |
-		wxSOCKET_INPUT_FLAG |
-		wxSOCKET_LOST_FLAG);
-	m_sock->Notify(true);
-
-	//connect to IPV4 type adress 
+	
 	OpenConnection(wxSockAddress::IPV4);
+	//connect to IPV4 type adress 
+	//OpenConnection(wxSockAddress::IPV4, addr);
 }
 else
 {
@@ -146,295 +149,28 @@ IpPanel::IpPanel(wxPanel* parent)
 		wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2,
 			wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
 {
-	wxConfigBase* pConfig = wxConfigBase::Get();
-
+	Communicate* comm = (Communicate*)m_parent->GetParent();
 	wxString ip_from_cfg;
 	wxString port_from_cfg;
-	
-	ip_from_cfg = pConfig->Read("/Controls/m_IP");
-	port_from_cfg = pConfig->Read("/Controls/m_PORT");
+	wxConfigBase* pConfig = wxConfigBase::Get();
 
-	//wxMessageBox(ip_from_cfg, port_from_cfg);
-
-	wxChar ip_to_display[18];
-	wxChar port_to_dispaly[8];
-
-	bool e_read_cfg_ip = false;
-	bool e_read_cfg_port = false;
-
-	//zero base indexes of dots in IP adress from config
-	int first_dot_i = 0, second_dot_i = 0, third_dot_i = 0;
-
-	//some int variable to define difference in size between string readed from cfg file
-	//to size of buffer [18] char, fill with ' ' sign
-	int lengthen_cfg_str;
-	lengthen_cfg_str = wxStrlen(ip_from_cfg);
-	
-	for (int inee = lengthen_cfg_str; inee <= 18; inee++)
-	{
-		ip_from_cfg.append(' ');
-		lengthen_cfg_str = wxStrlen(ip_from_cfg);
-		
-	}
-
-	//to be sure not to work on empty string
-
-	if (ip_from_cfg.Length() > 0)
-	{
-		// some local iterators
-
-		int i = 0, j = 0, dot_count = 0;
-		
-		//main loop to fill all necessery spaces in the buffer with proper signs from cfg file
-		for (wxString::const_iterator it = ip_from_cfg.begin(); it != ip_from_cfg.end()-5; it++)
-		{
-			//if dot is present two places earlier tha should, we would like to make sure this doesnt hapend at any point of IP adress
-			if ((i <= 1 && ip_from_cfg[i] == '.') ||
-				(i > 2 && i <= 6 && (ip_from_cfg[i] == '.')) && j >= 5  && dot_count == 1||
-				(i > 6 && i <= 11 && (ip_from_cfg[i] == '.')) &&j >= 11 && dot_count == 2)
-			{
-				//dot_count told us how many dots are present in the buffer
-				dot_count++;
-
-				//add null value to the current index
-				ip_to_display[j] = NULL;
-				//set null value at second index 
-				ip_to_display[j + 1] = NULL;
-				//and then place the dot in proper place
-				ip_to_display[j + 2] = ip_from_cfg[i];
-
-				//and set all indexers at correct value;
-				j += 3;
-				i++;
-			}
-				//check if the '.' is present in the IP one place erlier than should
-				else if ((i > 1 && i <= 2 && ip_from_cfg[i] == '.' ) ||
-					(i > 2 && i <= 6 && ip_from_cfg[i] == '.') ||
-					(i > 6 && i <= 11 && ip_from_cfg[i] == '.' ))
-				{
-					//dot_count told us how many dots are present in the buffer
-					dot_count++;
-					//set value at current index as null 
-					ip_to_display[j] = NULL;
-					//and then place the dot in place
-					ip_to_display[j+1] = ip_from_cfg[i];
-					
-					//and set all indexers at correct value;
-					j += 2;
-					i++;
-				}
-			//Then change empty spaces added before to NULL values
-				else if (ip_from_cfg[i] == ' ')
-			{
-				ip_to_display[j] = NULL;
-				//and shift indexes
-				i++;
-				j++;
-			}
-				
-			//In normal case, just place values from cfg file in place
-				else
-				{
-					ip_to_display[j] = ip_from_cfg[i];
-					//and ofc shift the iterators
-					i++;
-					j++;
-				}
-				
-			
-	
-		}
-
-	}//and error to handle if case if sth goes wrong
-	else e_read_cfg_ip = true;
-
-
-	
-	//a = ip_from_cfg[2];
-	int start_position = wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4;
-	wxString description = "<- [MSG-] / [MSG+] -> \n"  "+value [POE+] \n -value [POE-] \n" 
-		"sign empty under the 0\n"
-		"[PRINT] - save IP/HOST";
-	ip_font = new wxFont(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
-
-
-	m_ip_1 = new wxTextCtrl(this, -1, ip_to_display[0], wxPoint(start_position - 330, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_1->SetFont(*ip_font);
-	m_ip_1->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_1->SetForegroundColour(wxColor(0, 0, 0));
-	
-	m_ip_2 = new wxTextCtrl(this, -1, ip_to_display[1], wxPoint(start_position - 290, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_2->SetFont(*ip_font);
-	m_ip_2->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_2->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_3 = new wxTextCtrl(this, -1, ip_to_display[2], wxPoint(start_position - 250, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_3->SetFont(*ip_font);
-	m_ip_3->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_3->SetForegroundColour(wxColor(0, 0, 0));
-
-	dot1 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position - 215, 30), wxSize(5, 50), wxNO_BORDER);
-	dot1->SetFont(*ip_font);
-	dot1->SetBackgroundColour(wxColor(0, 0, 0));
-	dot1->SetForegroundColour(wxColor(255, 255, 255));
-
-	m_ip_4 = new wxTextCtrl(this, -1, ip_to_display[4], wxPoint(start_position - 205, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_4->SetFont(*ip_font);
-	m_ip_4->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_4->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_5 = new wxTextCtrl(this, -1, ip_to_display[5], wxPoint(start_position - 165, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_5->SetFont(*ip_font);
-	m_ip_5->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_5->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_6 = new wxTextCtrl(this, -1, ip_to_display[6], wxPoint(start_position - 125, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_6->SetFont(*ip_font);
-	m_ip_6->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_6->SetForegroundColour(wxColor(0, 0, 0));
-
-	dot2 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position - 90, 30), wxSize(5, 50), wxNO_BORDER);
-	dot2->SetFont(*ip_font);
-	dot2->SetBackgroundColour(wxColor(0, 0, 0));
-	dot2->SetForegroundColour(wxColor(255, 255, 255));
-
-	m_ip_7 = new wxTextCtrl(this, -1, ip_to_display[8], wxPoint(start_position - 80, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_7->SetFont(*ip_font);
-	m_ip_7->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_7->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_8 = new wxTextCtrl(this, -1, ip_to_display[9], wxPoint(start_position - 40, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_8->SetFont(*ip_font);
-	m_ip_8->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_8->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_9 = new wxTextCtrl(this, -1, ip_to_display[10], wxPoint(start_position, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_9->SetFont(*ip_font);
-	m_ip_9->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_9->SetForegroundColour(wxColor(0, 0, 0));
-
-	dot2 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position + 35, 30), wxSize(5, 50), wxNO_BORDER);
-	dot2->SetFont(*ip_font);
-	dot2->SetBackgroundColour(wxColor(0, 0, 0));
-	dot2->SetForegroundColour(wxColor(255, 255, 255));
-
-	m_ip_10 = new wxTextCtrl(this, -1, ip_to_display[12], wxPoint(start_position + 45, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_10->SetFont(*ip_font);
-	m_ip_10->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_10->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_11 = new wxTextCtrl(this, -1, ip_to_display[13], wxPoint(start_position + 85, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_11->SetFont(*ip_font);
-	m_ip_11->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_11->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_12 = new wxTextCtrl(this, -1, ip_to_display[14], wxPoint(start_position + 125, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_12->SetFont(*ip_font);
-	m_ip_12->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_12->SetForegroundColour(wxColor(0, 0, 0));
-
-	semicolon = new wxStaticText(this, -1, wxT(":"), wxPoint(start_position + 160, 20), wxSize(5, 50), wxNO_BORDER);
-	semicolon->SetFont(*ip_font);
-	semicolon->SetBackgroundColour(wxColor(0, 0, 0));
-	semicolon->SetForegroundColour(wxColor(255, 255, 255));
-
-	m_ip_13 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 175, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_13->SetFont(*ip_font);
-	m_ip_13->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_13->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_14 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 210, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_14->SetFont(*ip_font);
-	m_ip_14->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_14->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_15 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 245, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_15->SetFont(*ip_font);
-	m_ip_15->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_15->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_16 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 280, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_16->SetFont(*ip_font);
-	m_ip_16->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_16->SetForegroundColour(wxColor(0, 0, 0));
-
-	m_ip_17 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 315, 20), wxSize(35, 50), wxNO_BORDER);
-	m_ip_17->SetFont(*ip_font);
-	m_ip_17->SetBackgroundColour(wxColor(0, 255, 0));
-	m_ip_17->SetForegroundColour(wxColor(0, 0, 0));
-
-
-	//Communicate* comm = (Communicate*)m_parent->GetParent();
-
-	ip_setup_desc = new wxStaticText(this, -1, wxT(""), wxPoint(start_position - 500, 100), wxSize(400, 100), wxNO_BORDER);
-	ip_setup_desc->SetFont(*ip_font);
-	ip_setup_desc->SetBackgroundColour(wxColor(0, 0, 0));
-	ip_setup_desc->SetForegroundColour(wxColor(0, 200, 100));
-
-	ip_setup_desc->SetLabel(description);
-
-	//comm->hbox->Add(m_ip_17);
-
-	//m_text_ip = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
-	//m_text_ip->SetFont(*main_font);
-	//m_text_ip->SetForegroundColour(wxColor(255, 255, 255));
-	//m_text_ip->Show();
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//config
-	// restore the control's values from the config
-
-	// NB: in this program, the config object is already created at this moment
-	// because we had called Get() from MyApp::OnInit(). However, if you later
-	// change the code and don't create it before this line, it won't break
-	// anything - unlike if you manually create wxConfig object with Create()
-	// or in any other way (then you must be sure to create it before using it!).
-	
 	wxIPaddress* addr;
 	wxIPV4address addr4;
 	addr = &addr4;
-	//comm->m_mp->addr = &addr4;
-	//IP and PORT stored in registy->windows (/HKEY_CURRENT_USER/Software/YourVendor/YourApp)
-	// propably /user/lib/local/Skalarki on unix (or in the app root location)
-	// 
 
-	/*Set up the config directory*/
-	pConfig->SetPath("/Controls");
 
-	/*we need to check if there are already values stored in this location*/
-	/*If they are empty, reed them from the user*/
+	ip_from_cfg = pConfig->Read("/Controls/m_IP");
+	port_from_cfg = pConfig->Read("/Controls/m_PORT");
+	hostname = ip_from_cfg;
+	port = port_from_cfg;
+	wxMessageBox(ip_from_cfg, port_from_cfg);
 
-	if (pConfig->Read("m_IP").IsEmpty() ||
-		pConfig->Read("m_PORT").IsEmpty())
+	if (ip_from_cfg.IsEmpty() ||
+		port_from_cfg.IsEmpty())
 	{
 		Config_flag = true;
 		wxMessageBox("config flag true");
-		//// Ask user for server address
-		////m_text_ip->SetLabel("test");
-		//hostname = wxGetTextFromUser(
-		//	_("Enter the address of the server:"),
-		//	_("Connect ..."),
-		//	_("192.168.0.31"));
-		//if (hostname.empty())
-		//	return;
 
-		//// Ask user for server port
-		//port = wxGetTextFromUser(
-		//	_("Enter the Port of the server:"),
-		//	_("Connect ..."),
-		//	_("5060"));
-		//if (port.empty())
-		//	return;
-		///// <need some function for validation of ip adress and port values>
-		///// //////////////////////////////////////////////////////////////// ///
-		///// 
-		//pConfig->SetPath("/Controls");
-		///*write user defined values to the config file*/
-		//pConfig->Write("m_IP", hostname);
-		//pConfig->Write("m_PORT", port);
-
-		///*initiate adress ip and port by user defined values*/
-		//addr->Hostname(hostname);
-		//addr->Service(port);
 	}
 
 	//If there are already Ip and HOST values in the config file
@@ -443,22 +179,329 @@ IpPanel::IpPanel(wxPanel* parent)
 		//////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!?////////////////
 		///!!!HERE SWITCH ON CONNECTION BY SETTING CONFIG_FLAG false!!!!!!!#!##!!#####################################################
 		/// 
-		///Config_flag = false;
+		/// 
+		
+		//comm->m_mp->m_adress(hostname) = ip_from_user;
+		addr->Hostname(port_from_cfg);
+		addr->Service(port_from_cfg);
+		//comm->m_ip->Config_flag = false;
+
+		//coppy current address to the main panel frame
+		/*comm->m_mp->OpenConnection(wxSockAddress::IPV4);*/
+
+		Config_flag = false;
+
+		wxMessageBox("config flag false");
+
 		//setup config path
-		pConfig->SetPath("/Controls");
+		//pConfig->SetPath("/Controls");
 		//and read those values
-		hostname = pConfig->Read("m_IP");
-		port = pConfig->Read("m_PORT");
+		//hostname = pConfig->Read("m_IP");
+		//port = pConfig->Read("m_PORT");
 
 		//and initiate the address by values from config file
-		addr->Hostname(hostname);
-		addr->Service(port);
+		//addr->Hostname(hostname);
+		//addr->Service(port);
 
 		/////////////////////////////////////////////////////////////////////
 		/// here we need to implement some function to delete existing config 
 		/// by some keys combination
 		/// /////////////////////////////////////////////////////////////////
+		//comm->m_mp->OpenConnection(wxSockAddress::IPV4);
+		//~IpPanel();
 	}
+
+	/// ========================================================================================================================================
+	/// When config is needed Config_flag == true and we run the proper functions
+	/// else, do nothing
+	
+
+	if (Config_flag)
+	{
+
+
+
+		//wxChar ip_to_display[50];
+		//wxChar port_to_dispaly[8];
+
+		bool e_read_cfg_ip = false;
+		bool e_read_cfg_port = false;
+
+		//zero base indexes of dots in IP adress from config
+		int first_dot_i = 0, second_dot_i = 0, third_dot_i = 0;
+
+		//some int variable to define difference in size between string readed from cfg file
+		//to size of buffer [50] char, fill with ' ' sign
+		int lengthen_cfg_str;
+		lengthen_cfg_str = wxStrlen(ip_from_cfg);
+
+		for (int inee = lengthen_cfg_str; inee <= 20; inee++)
+		{
+			ip_from_cfg.append(' ');
+			//lengthen_cfg_str = wxStrlen(ip_from_cfg);
+
+		}
+
+		//to be sure not to work on empty string
+
+		if (ip_from_cfg.Length() > 0)
+		{
+			// some local iterators
+			// 'i' index is used to iterate over IP string readed from config file
+			// 'j' index is the index of complete ip adress to display in form of ___.___.___.___
+			//w
+			int i = 0, j = 0, dot_count = 0;
+			wxMessageBox(ip_from_cfg);
+			//main loop to fill all necessery spaces in the buffer with proper signs from cfg file
+			for (wxString::const_iterator it = ip_from_cfg.begin(); it != ip_from_cfg.end() - 5; it++)
+			{
+				//if dot is present two places earlier tha should, we would like to make sure this doesnt hapend at any point of IP adress
+				//in if condition we specify index of 'i' at which such situation could take place
+				//then we chech if the dot is present, and
+				if ((i <= 1 && ip_from_cfg[i] == '.') ||
+					(i > 2 && i <= 5 && (ip_from_cfg[i] == '.')) && j == 5 && dot_count == 1 ||
+					(i > 4 && i <= 9 && (ip_from_cfg[i] == '.')) && j == 9 && dot_count == 2)
+				{
+					//dot_count told us how many dots are present in the buffer
+					dot_count++;
+
+					//add null value to the current index
+					ip_to_display[j] = NULL;
+					//set null value at second index 
+					ip_to_display[j + 1] = NULL;
+					//and then place the dot in proper place
+					ip_to_display[j + 2] = ip_from_cfg[i];
+
+					//and set all indexers at correct value;
+					j += 3;
+					i++;
+
+				}
+				//check if the '.' is present in the IP one place erlier than should
+				else if ((i > 1 && i <= 2 && ip_from_cfg[i] == '.') ||
+					(i > 2 && i <= 6 && ip_from_cfg[i] == '.') && dot_count == 1 && j == 6 ||
+					(i > 6 && i <= 10 && ip_from_cfg[i] == '.' && dot_count == 2) && j == 10)
+				{
+					//dot_count told us how many dots are present in the buffer
+					dot_count++;
+					//set value at current index as null 
+					ip_to_display[j] = NULL;
+					//and then place the dot in place
+					ip_to_display[j + 1] = ip_from_cfg[i];
+
+					//and set all indexers at correct value;
+
+					j += 2;
+					i++;
+
+				}
+				//Then change empty spaces added before to NULL values
+				else if (ip_from_cfg[i] == ' ')
+				{
+					ip_to_display[j] = NULL;
+
+					//and shift indexes
+					i++;
+					j++;
+				}
+
+				//In normal case, just place values from cfg file in place
+				else
+				{
+					ip_to_display[j] = ip_from_cfg[i];
+					if (ip_from_cfg[i] == '.')
+					{
+						dot_count++;
+					}
+					//and ofc shift the iterators
+					i++;
+					j++;
+				}
+
+
+
+			}
+
+		}//and error to handle if case if sth goes wrong
+		else e_read_cfg_ip = true;
+
+		//After all values from string are loaded to the correct places in the char array, we can also update the values used as a iterators
+		//on button events to increment or decrement numbers in IP adresses
+		//In theory the char aray members can be use to that purpose, but in that case we need additional values to store the index of
+		//IP digit we would like to modify, so for now ill stay with the solution where the iterators are stored in separate chars.
+		//this modifier value is needed to skip dots in the IP adress when transfering them to the counters. 
+		//the ip_to_display caounter is [i - 1] becaouse count_poe is a 1 base index
+		int some_modifier = 0;
+		for (int i = 1; i < 18; i++)
+		{
+			if (ip_to_display[i - 1] != '.' && ip_to_display[i - 1] != 0)
+				count_poe[i - some_modifier] = ip_to_display[i - 1] - 48;
+			else if (ip_to_display[i - 1] == 0)
+				count_poe[i - some_modifier] = ip_to_display[i - 1];
+			else some_modifier++;
+			//else
+			//	i--;
+			//wxMessageBox(count_poe[i]);
+		}
+
+
+		int start_position = wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4;
+		wxString description = "<- [MSG-] / [MSG+] -> \n"  "+value [POE+] \n -value [POE-] \n"
+			"sign empty under the 0\n"
+			"[PRINT] - save IP/HOST";
+		ip_font = new wxFont(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
+
+		m_ip_1 = new wxTextCtrl(this, -1, ip_to_display[0], wxPoint(start_position - 330, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_1->SetFont(*ip_font);
+		//count_poe[0] = int( ip_to_display[0]);
+		m_ip_1->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_1->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_2 = new wxTextCtrl(this, -1, ip_to_display[1], wxPoint(start_position - 290, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_2->SetFont(*ip_font);
+		m_ip_2->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_2->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_3 = new wxTextCtrl(this, -1, ip_to_display[2], wxPoint(start_position - 250, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_3->SetFont(*ip_font);
+		m_ip_3->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_3->SetForegroundColour(wxColor(0, 0, 0));
+
+		dot1 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position - 215, 30), wxSize(5, 50), wxNO_BORDER);
+		dot1->SetFont(*ip_font);
+		dot1->SetBackgroundColour(wxColor(0, 0, 0));
+		dot1->SetForegroundColour(wxColor(255, 255, 255));
+
+		m_ip_4 = new wxTextCtrl(this, -1, ip_to_display[4], wxPoint(start_position - 205, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_4->SetFont(*ip_font);
+		m_ip_4->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_4->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_5 = new wxTextCtrl(this, -1, ip_to_display[5], wxPoint(start_position - 165, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_5->SetFont(*ip_font);
+		m_ip_5->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_5->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_6 = new wxTextCtrl(this, -1, ip_to_display[6], wxPoint(start_position - 125, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_6->SetFont(*ip_font);
+		m_ip_6->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_6->SetForegroundColour(wxColor(0, 0, 0));
+
+		dot2 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position - 90, 30), wxSize(5, 50), wxNO_BORDER);
+		dot2->SetFont(*ip_font);
+		dot2->SetBackgroundColour(wxColor(0, 0, 0));
+		dot2->SetForegroundColour(wxColor(255, 255, 255));
+
+		m_ip_7 = new wxTextCtrl(this, -1, ip_to_display[8], wxPoint(start_position - 80, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_7->SetFont(*ip_font);
+		m_ip_7->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_7->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_8 = new wxTextCtrl(this, -1, ip_to_display[9], wxPoint(start_position - 40, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_8->SetFont(*ip_font);
+		m_ip_8->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_8->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_9 = new wxTextCtrl(this, -1, ip_to_display[10], wxPoint(start_position, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_9->SetFont(*ip_font);
+		m_ip_9->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_9->SetForegroundColour(wxColor(0, 0, 0));
+
+		dot2 = new wxStaticText(this, -1, wxT("."), wxPoint(start_position + 35, 30), wxSize(5, 50), wxNO_BORDER);
+		dot2->SetFont(*ip_font);
+		dot2->SetBackgroundColour(wxColor(0, 0, 0));
+		dot2->SetForegroundColour(wxColor(255, 255, 255));
+
+		m_ip_10 = new wxTextCtrl(this, -1, ip_to_display[12], wxPoint(start_position + 45, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_10->SetFont(*ip_font);
+		m_ip_10->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_10->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_11 = new wxTextCtrl(this, -1, ip_to_display[13], wxPoint(start_position + 85, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_11->SetFont(*ip_font);
+		m_ip_11->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_11->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_12 = new wxTextCtrl(this, -1, ip_to_display[14], wxPoint(start_position + 125, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_12->SetFont(*ip_font);
+		m_ip_12->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_12->SetForegroundColour(wxColor(0, 0, 0));
+
+		semicolon = new wxStaticText(this, -1, wxT(":"), wxPoint(start_position + 160, 20), wxSize(5, 50), wxNO_BORDER);
+		semicolon->SetFont(*ip_font);
+		semicolon->SetBackgroundColour(wxColor(0, 0, 0));
+		semicolon->SetForegroundColour(wxColor(255, 255, 255));
+
+		m_ip_13 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 175, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_13->SetFont(*ip_font);
+		m_ip_13->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_13->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_14 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 210, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_14->SetFont(*ip_font);
+		m_ip_14->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_14->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_15 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 245, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_15->SetFont(*ip_font);
+		m_ip_15->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_15->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_16 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 280, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_16->SetFont(*ip_font);
+		m_ip_16->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_16->SetForegroundColour(wxColor(0, 0, 0));
+
+		m_ip_17 = new wxTextCtrl(this, -1, wxT(""), wxPoint(start_position + 315, 20), wxSize(35, 50), wxNO_BORDER);
+		m_ip_17->SetFont(*ip_font);
+		m_ip_17->SetBackgroundColour(wxColor(0, 255, 0));
+		m_ip_17->SetForegroundColour(wxColor(0, 0, 0));
+
+
+		//Communicate* comm = (Communicate*)m_parent->GetParent();
+
+		ip_setup_desc = new wxStaticText(this, -1, wxT(""), wxPoint(start_position - 500, 100), wxSize(400, 100), wxNO_BORDER);
+		ip_setup_desc->SetFont(*ip_font);
+		ip_setup_desc->SetBackgroundColour(wxColor(0, 0, 0));
+		ip_setup_desc->SetForegroundColour(wxColor(0, 200, 100));
+
+		ip_setup_desc->SetLabel(description);
+
+		//comm->hbox->Add(m_ip_17);
+
+		//m_text_ip = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
+		//m_text_ip->SetFont(*main_font);
+		//m_text_ip->SetForegroundColour(wxColor(255, 255, 255));
+		//m_text_ip->Show();
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//config
+		// restore the control's values from the config
+
+		// NB: in this program, the config object is already created at this moment
+		// because we had called Get() from MyApp::OnInit(). However, if you later
+		// change the code and don't create it before this line, it won't break
+		// anything - unlike if you manually create wxConfig object with Create()
+		// or in any other way (then you must be sure to create it before using it!).
+
+
+		//comm->m_mp->addr = &addr4;
+		//IP and PORT stored in registy->windows (/HKEY_CURRENT_USER/Software/YourVendor/YourApp)
+		// propably /user/lib/local/Skalarki on unix (or in the app root location)
+		// 
+
+		/*Set up the config directory*/
+		//  == = ========  pConfig->SetPath("/Controls");
+
+		/*we need to check if there are already values stored in this location*/
+		/*If they are empty, reed them from the user*/
+
+
+		hostname = ip_to_display;
+		port = port_to_dispaly;
+	}
+
+
+
 }
 
 IpPanel::~IpPanel()
@@ -488,8 +531,7 @@ void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
 	//wxIPV4address adr;
 
 	wxConfigBase* pConfig = wxConfigBase::Get();
-	wxIPaddress* addr;
-	wxIPV4address addr4;
+
 	addr = &addr4;
 
 	/* communicate class to handle data transfer between the panels */
@@ -528,9 +570,13 @@ void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
 			comm->m_ip->port = port_from_user;
 			comm->m_ip->Config_flag = false;
 			//comm->m_ip->~IpPanel();
+
+			OpenConnection(wxSockAddress::IPV4);
+			comm->m_ip->~IpPanel();
 		}
 		
 	}
+	
 	
 }
 
@@ -539,7 +585,7 @@ void MainPanel::OnSocketEvent(wxSocketEvent& event)
 {
 	//wxBuffer to collect data from socket
 
-	wxCharBuffer buf2 = "";
+	wxCharBuffer buf2 = "               ";
 
 	//here we will handle the socket events
 	switch (event.GetSocketEvent())
@@ -583,9 +629,15 @@ void MainPanel::OnOpenConnection(wxCommandEvent& WXUNUSED(event))
 
 void MainPanel::OpenConnection(wxSockAddress::Family family)
 {
+
+	
+
+	//connect to IPV4 type adress 
+	//OpenConnection(wxSockAddress::IPV4);
+
 	//wxUnusedVar(family); // unused in !wxUSE_IPV6 case
 
-	Communicate* comm = (Communicate*)m_parent->GetParent();
+	//Communicate* comm = (Communicate*)m_parent->GetParent();
 	wxString m_IP;
 	wxString m_PORT;
 
@@ -603,7 +655,8 @@ void MainPanel::OpenConnection(wxSockAddress::Family family)
 	// and read the control's values to the config
 	m_IP = pConfig->Read("/Controls/m_IP");
 	m_PORT = pConfig->Read("/Controls/m_PORT");
-
+	wxMessageBox(m_IP);
+	wxMessageBox(m_PORT);
 	addr->Hostname(m_IP);
 	addr->Service(m_PORT);
 	//Save the IP and Host name to config file
@@ -619,10 +672,12 @@ void MainPanel::OpenConnection(wxSockAddress::Family family)
 	if (m_sock->IsConnected())
 	{
 		m_text_main->SetLabelText(wxT("connected"));
+		wxMessageBox("dupa");
 	}
 	else
 	{
 		m_text_main->SetLabelText(wxT("connection error"));
+		wxMessageBox("dupa error");
 	}
 	m_busy = false;
 
@@ -656,7 +711,7 @@ void MainPanel::OnMsgPlus(wxCommandEvent& WXUNUSED(event))
 	}
 	else
 	{
-		comm->m_ip->m_ip_1->SetFocus();
+		//comm->m_ip->m_ip_1->SetFocus();
 
 		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_msg));
 		//send text to different text boxes
@@ -674,6 +729,7 @@ void MainPanel::OnMsgMinus(wxCommandEvent& WXUNUSED(event))
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	if (comm->m_ip->Config_flag == true)
 	{
+		
 		if (comm->m_ip->count_msg <= 1)
 		{
 			comm->m_ip->count_msg = 1;
@@ -705,8 +761,10 @@ void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	if (comm->m_ip->Config_flag == true)
 	{
+
 		if (comm->m_ip->count_poe[comm->m_ip->count_msg] >= 9)
 		{
+			//wxMessageBox(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
 			comm->m_ip->count_poe[comm->m_ip->count_msg] = 9;
 			ButtonClicked();
 		}
@@ -747,7 +805,6 @@ void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
 			ButtonClicked();
 		}
 
-
 	}
 	else
 	{
@@ -759,7 +816,6 @@ void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
 		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_poe));
 		comm->m_midp->m_text_mid->SetLabel(text_main);
 	}
-
 
 }
 
@@ -777,7 +833,6 @@ void MainPanel::ButtonClicked()
 
 		case 1:
 			comm->m_ip->m_ip_1->SetFocus();
-			
 
 			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
 			{
