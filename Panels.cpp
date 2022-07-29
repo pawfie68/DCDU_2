@@ -72,19 +72,7 @@ Connect(ID_PRINT, wxEVT_COMMAND_BUTTON_CLICKED,
 
 Connect(ID_COMBINED, wxEVT_COMMAND_BUTTON_CLICKED,
 	wxCommandEventHandler(MainPanel::OnPrintEvent));
-//ID_COMBINED
 
-
-//Bind(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainPanel::OnFourButtons), );
-
-//Bind(wxEVT_COMMAND_BUTTON_CLICKED,
-//	wxCommandEventHandler(MainPanel::OnButtonEvent), this);
-//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-//	wxCommandEventHandler(MainPanel::OnButtonEvent));
-//Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-//	wxCommandEventHandler(MainPanel::OnButtonEvent));
-//Connect(ID_MSG_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-//	wxCommandEventHandler(MainPanel::OnButtonEvent));
 
 //////////////////////////////////////////////////////////////////////////
 // TCP/IP part////////////////////////////////////////////////////////////
@@ -92,7 +80,6 @@ Connect(ID_COMBINED, wxEVT_COMMAND_BUTTON_CLICKED,
 
 //  Create the socket
 m_sock = new wxSocketClient();
-
 
 //Setup the event handler and subscribe to most events
 m_sock->SetEventHandler(*this, SOCKET_ID);
@@ -117,6 +104,7 @@ if (comm->m_ip->Config_flag == false)
 }
 else
 {
+	// we want to set focus on all elements of IP panel one by one, to display them on the front of the main app window
 	comm->m_ip->SetFocus();
 	comm->m_ip->m_ip_2->SetFocus();
 	comm->m_ip->m_ip_3->SetFocus(); comm->m_ip->m_ip_3->SetFocus();
@@ -127,7 +115,6 @@ else
 	comm->m_ip->m_ip_13->SetFocus(); comm->m_ip->m_ip_14->SetFocus();
 	comm->m_ip->m_ip_15->SetFocus(); comm->m_ip->m_ip_16->SetFocus();
 	comm->m_ip->m_ip_17->SetFocus(); comm->m_ip->m_ip_1->SetFocus();
-
 }
 
 }
@@ -149,7 +136,11 @@ IpPanel::IpPanel(wxPanel* parent)
 		wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2,
 			wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 5), /*wxBORDER_SUNKEN*/  wxSTAY_ON_TOP)
 {
+	//communicate class is the parent class of all panels do we can use it to communicate between all elements
+	//of the UI
 	Communicate* comm = (Communicate*)m_parent->GetParent();
+
+	//some auxiliary values to deal with the values readed from config file (UNIX) registry (Windows)
 	wxString ip_from_cfg;
 	wxString port_from_cfg;
 	wxConfigBase* pConfig = wxConfigBase::Get();
@@ -176,10 +167,6 @@ IpPanel::IpPanel(wxPanel* parent)
 	//If there are already Ip and HOST values in the config file
 	else
 	{
-		//////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!?////////////////
-		///!!!HERE SWITCH ON CONNECTION BY SETTING CONFIG_FLAG false!!!!!!!#!##!!#####################################################
-		/// 
-		/// 
 		
 		//comm->m_mp->m_adress(hostname) = ip_from_user;
 		addr->Hostname(port_from_cfg);
@@ -193,22 +180,7 @@ IpPanel::IpPanel(wxPanel* parent)
 
 		wxMessageBox("config flag false");
 
-		//setup config path
-		//pConfig->SetPath("/Controls");
-		//and read those values
-		//hostname = pConfig->Read("m_IP");
-		//port = pConfig->Read("m_PORT");
-
-		//and initiate the address by values from config file
-		//addr->Hostname(hostname);
-		//addr->Service(port);
-
-		/////////////////////////////////////////////////////////////////////
-		/// here we need to implement some function to delete existing config 
-		/// by some keys combination
-		/// /////////////////////////////////////////////////////////////////
-		//comm->m_mp->OpenConnection(wxSockAddress::IPV4);
-		//~IpPanel();
+		
 	}
 
 	/// ========================================================================================================================================
@@ -219,10 +191,6 @@ IpPanel::IpPanel(wxPanel* parent)
 	if (Config_flag)
 	{
 
-
-
-		//wxChar ip_to_display[50];
-		//wxChar port_to_dispaly[8];
 
 		bool e_read_cfg_ip = false;
 		bool e_read_cfg_port = false;
@@ -238,7 +206,6 @@ IpPanel::IpPanel(wxPanel* parent)
 		for (int inee = lengthen_cfg_str; inee <= 20; inee++)
 		{
 			ip_from_cfg.append(' ');
-			//lengthen_cfg_str = wxStrlen(ip_from_cfg);
 
 		}
 
@@ -249,7 +216,7 @@ IpPanel::IpPanel(wxPanel* parent)
 			// some local iterators
 			// 'i' index is used to iterate over IP string readed from config file
 			// 'j' index is the index of complete ip adress to display in form of ___.___.___.___
-			//w
+			
 			int i = 0, j = 0, dot_count = 0;
 			wxMessageBox(ip_from_cfg);
 			//main loop to fill all necessery spaces in the buffer with proper signs from cfg file
@@ -318,8 +285,6 @@ IpPanel::IpPanel(wxPanel* parent)
 					j++;
 				}
 
-
-
 			}
 
 		}//and error to handle if case if sth goes wrong
@@ -339,21 +304,25 @@ IpPanel::IpPanel(wxPanel* parent)
 			else if (ip_to_display[i - 1] == 0)
 				count_poe[i - some_modifier] = ip_to_display[i - 1];
 			else some_modifier++;
-			//else
-			//	i--;
-			//wxMessageBox(count_poe[i]);
 		}
-
-
+		//===============================================================================================================================
+		// and now is a time to deal with visual aspects of IP panel
+		// at the beggining we want to know where to place the IP screen -> in we will start at the 1/4 of screen resolution
+		//===============================================================================================================================
 		int start_position = wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4;
+		// and define some description of UI to the user
 		wxString description = "<- [MSG-] / [MSG+] -> \n"  "+value [POE+] \n -value [POE-] \n"
 			"sign empty under the 0\n"
 			"[PRINT] - save IP/HOST";
+
+		//Here we can set up the font properties for the all IP panel
 		ip_font = new wxFont(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
 
+		//===============================================================================================================================
+		//and one after another we can display the IP/HOST values for every single window of IP Panel
+		//we can also change color of font and background of small IP textboxes
 		m_ip_1 = new wxTextCtrl(this, -1, ip_to_display[0], wxPoint(start_position - 330, 20), wxSize(35, 50), wxNO_BORDER);
 		m_ip_1->SetFont(*ip_font);
-		//count_poe[0] = int( ip_to_display[0]);
 		m_ip_1->SetBackgroundColour(wxColor(0, 255, 0));
 		m_ip_1->SetForegroundColour(wxColor(0, 0, 0));
 
@@ -457,55 +426,19 @@ IpPanel::IpPanel(wxPanel* parent)
 		m_ip_17->SetBackgroundColour(wxColor(0, 255, 0));
 		m_ip_17->SetForegroundColour(wxColor(0, 0, 0));
 
-
-		//Communicate* comm = (Communicate*)m_parent->GetParent();
-
 		ip_setup_desc = new wxStaticText(this, -1, wxT(""), wxPoint(start_position - 500, 100), wxSize(400, 100), wxNO_BORDER);
 		ip_setup_desc->SetFont(*ip_font);
 		ip_setup_desc->SetBackgroundColour(wxColor(0, 0, 0));
 		ip_setup_desc->SetForegroundColour(wxColor(0, 200, 100));
-
+		//===============================================================================================================================
+		//and display the buttons description 
 		ip_setup_desc->SetLabel(description);
-
-		//comm->hbox->Add(m_ip_17);
-
-		//m_text_ip = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
-		//m_text_ip->SetFont(*main_font);
-		//m_text_ip->SetForegroundColour(wxColor(255, 255, 255));
-		//m_text_ip->Show();
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//config
-		// restore the control's values from the config
-
-		// NB: in this program, the config object is already created at this moment
-		// because we had called Get() from MyApp::OnInit(). However, if you later
-		// change the code and don't create it before this line, it won't break
-		// anything - unlike if you manually create wxConfig object with Create()
-		// or in any other way (then you must be sure to create it before using it!).
-
-
-		//comm->m_mp->addr = &addr4;
-		//IP and PORT stored in registy->windows (/HKEY_CURRENT_USER/Software/YourVendor/YourApp)
-		// propably /user/lib/local/Skalarki on unix (or in the app root location)
-		// 
-
-		/*Set up the config directory*/
-		//  == = ========  pConfig->SetPath("/Controls");
-
-		/*we need to check if there are already values stored in this location*/
-		/*If they are empty, reed them from the user*/
-
-
-		hostname = ip_to_display;
-		port = port_to_dispaly;
 	}
-
-
-
 }
 
 IpPanel::~IpPanel()
 {
+	//when IpPanel is destroyed we want to save our IP/HOST data to proper file 
 	/* communicate class to handle data transfer between the panels */
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 
@@ -521,11 +454,13 @@ IpPanel::~IpPanel()
 
 void MainPanel::OnMultiButtons()
 {
+	//event for later
 	wxMessageBox("sdasasd");
 }
 
 void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
 {
+	//For now Print button is used only deal with the data supplied by the user,
 	wxString ip_from_user;
 	wxString port_from_user;
 	//wxIPV4address adr;
@@ -537,8 +472,6 @@ void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
 	/* communicate class to handle data transfer between the panels */
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//after PRINT button clicked, check every part of IP adrees, if empty get back to typing
-	int i = comm->m_ip->m_ip_1->GetValue().Length() + comm->m_ip->m_ip_2->GetValue().Length() + comm->m_ip->m_ip_3->GetValue().Length();
-	wxMessageBox(wxString::Format(wxT("%ld"), i));
 	if ((comm->m_ip->m_ip_1->GetValue().Length() + comm->m_ip->m_ip_2->GetValue().Length() + comm->m_ip->m_ip_3->GetValue().Length()) == 0 ||
 		(comm->m_ip->m_ip_4->GetValue().Length() + comm->m_ip->m_ip_5->GetValue().Length() + comm->m_ip->m_ip_6->GetValue().Length()) == 0 ||
 		(comm->m_ip->m_ip_7->GetValue().Length() + comm->m_ip->m_ip_8->GetValue().Length() + comm->m_ip->m_ip_9->GetValue().Length()) == 0 ||
@@ -550,6 +483,7 @@ void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
 	}
 	else
 	{
+		//when all parts of ip adress contain data we can create IP and Host name from single leters 
 		ip_from_user = comm->m_ip->m_ip_1->GetValue() + comm->m_ip->m_ip_2->GetValue() + comm->m_ip->m_ip_3->GetValue() + "."
 			+ comm->m_ip->m_ip_4->GetValue() + comm->m_ip->m_ip_5->GetValue() + comm->m_ip->m_ip_6->GetValue() + "."
 			+ comm->m_ip->m_ip_7->GetValue() + comm->m_ip->m_ip_8->GetValue() + comm->m_ip->m_ip_9->GetValue() + "."
@@ -557,47 +491,46 @@ void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
 		port_from_user = comm->m_ip->m_ip_13->GetValue() + comm->m_ip->m_ip_14->GetValue() + comm->m_ip->m_ip_15->GetValue()
 			+ comm->m_ip->m_ip_16->GetValue() + comm->m_ip->m_ip_17->GetValue();
 		
-		addr->Hostname(ip_from_user);
-		addr->Service(port_from_user);
-
+		//and save them to the config file
 		pConfig->Write("/Controls/m_IP", ip_from_user);
 		pConfig->Write("/Controls/m_PORT", port_from_user);
 
+		//after we saved the data, double check if they are the same as the value in config file,
+		//only then we can send the values to the IpPanel, open conection, and then destroy the IpPanel
 		if (pConfig->Read("/Controls/m_IP") == ip_from_user && pConfig->Read("/Controls/m_PORT") == port_from_user)
 		{
 			wxMessageBox("Values succesfully saved");
 			comm->m_ip->hostname = ip_from_user;
 			comm->m_ip->port = port_from_user;
 			comm->m_ip->Config_flag = false;
-			//comm->m_ip->~IpPanel();
 
 			OpenConnection(wxSockAddress::IPV4);
 			comm->m_ip->~IpPanel();
-		}
-		
-	}
-	
-	
+		}	
+	}	
 }
 
 
 void MainPanel::OnSocketEvent(wxSocketEvent& event)
 {
-	//wxBuffer to collect data from socket
+	//wxBuffer to collect data from socket with 16 black spaces
+	//Propably we will need only 1 sign at the time, but its larger for future use
+	wxCharBuffer buf2 = "                 ";
 
-	wxCharBuffer buf2 = "               ";
-
-	//here we will handle the socket events
+	//here we will handle the socket events 
 	switch (event.GetSocketEvent())
 	{
 		//when data arrived
 	case wxSOCKET_INPUT:
-		//reading 5 characters (1 should be enough, but to be safe, larger buffor was applied)
-		//and save them to the buffer buf2
-		m_sock->Read(buf2.data(), 5);
+
+		//reading 15 characters (1 should be enough, but to be safe, larger buffor was applied)
+		//and save them to the buffer buf2 || if sended data is shorter, the read function will
+		//collect only available data  
+		m_sock->Read(buf2.data(), 15);
 
 		//write back data from buf2, 
 		m_sock->Write(buf2.data(), wxStrlen(buf2.data()));
+
 		//and display them on the scren, clean screen first
 		m_text_main->SetLabel("");
 		m_text_main->SetLabel(buf2.data());
@@ -606,10 +539,14 @@ void MainPanel::OnSocketEvent(wxSocketEvent& event)
 		//when we lost connection with server
 	case wxSOCKET_LOST:
 
+		//display the inflo about the event
 		m_text_main->SetLabel("Socket connection was unexpectedly lost.");
 		break;
+
 		//when we establish connection with server
 	case wxSOCKET_CONNECTION:
+
+		//display the inflo about the connection
 		m_text_main->SetForegroundColour(wxColor(0, 255, 0));
 		m_text_main->SetLabel("... socket is now connected.");
 		break;
@@ -623,70 +560,69 @@ void MainPanel::OnSocketEvent(wxSocketEvent& event)
 
 void MainPanel::OnOpenConnection(wxCommandEvent& WXUNUSED(event))
 {
-	OpenConnection(wxSockAddress::IPV4);
+	//This function will be handle later when physical buttons wil be in place
+	// OpenConnection(wxSockAddress::IPV4);
 }
 
 
 void MainPanel::OpenConnection(wxSockAddress::Family family)
 {
-
-	
-
-	//connect to IPV4 type adress 
-	//OpenConnection(wxSockAddress::IPV4);
-
-	//wxUnusedVar(family); // unused in !wxUSE_IPV6 case
-
-	//Communicate* comm = (Communicate*)m_parent->GetParent();
+	//Here we define strings to store the values readed from config file
 	wxString m_IP;
 	wxString m_PORT;
 
 	//Define IP adrees
 	wxIPaddress* addr;
-	// and set it to IP adress type 4
+	// and set it to be IP adress type 4
 	wxIPV4address addr4;
 	addr = &addr4;
 
 	//Open the config file
 	wxConfigBase* pConfig = wxConfigBase::Get();
+	//when there is no such file - return 
 	if (pConfig == NULL)
 		return;
 
 	// and read the control's values to the config
 	m_IP = pConfig->Read("/Controls/m_IP");
 	m_PORT = pConfig->Read("/Controls/m_PORT");
-	wxMessageBox(m_IP);
-	wxMessageBox(m_PORT);
+
+	//sth for debugging
+	//wxMessageBox(m_IP); 
+	//wxMessageBox(m_PORT);
+	// 
+//initialize the adress with IP and PORT from config file
 	addr->Hostname(m_IP);
 	addr->Service(m_PORT);
-	//Save the IP and Host name to config file
 
+	//And finally connect to the server
 	m_sock->Connect(*addr, false);
+	
 	// we connect asynchronously and will get a wxSOCKET_CONNECTION event when
 	// the connection is really established
 
 	// if you want to make sure that connection is established right here you
 	// could call WaitOnConnect(timeout) instead
-	//wxMessageBox("Trying to connect to %s:%s", addr->Hostname(), addr->Service());
 
+	//We can check if the connection is established
 	if (m_sock->IsConnected())
 	{
+		//and inform the user about it
 		m_text_main->SetLabelText(wxT("connected"));
-		wxMessageBox("dupa");
 	}
 	else
 	{
+		//or when we cannot connect with the provided adress, then display the error
 		m_text_main->SetLabelText(wxT("connection error"));
-		wxMessageBox("dupa error");
 	}
 	m_busy = false;
 
-
-	m_sock->Connect(*addr, false);
 }
 
-
+//======================================================================================================================================
 //Events on buttons in main panel//
+//======================================================================================================================================
+
 
 void MainPanel::OnMsgPlus(wxCommandEvent& WXUNUSED(event))
 {
@@ -718,9 +654,6 @@ void MainPanel::OnMsgPlus(wxCommandEvent& WXUNUSED(event))
 		comm->m_mp->m_text_main->SetLabel(text_main);
 		comm->m_midp->m_text_mid->SetLabel(text_main);
 	}
-
-
-
 }
 
 
@@ -750,10 +683,7 @@ void MainPanel::OnMsgMinus(wxCommandEvent& WXUNUSED(event))
 		comm->m_mp->m_text_main->SetLabel(text_main);
 		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_msg));
 		comm->m_midp->m_text_mid->SetLabel(text_main);
-
 	}
-
-
 }
 
 void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
@@ -764,7 +694,6 @@ void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
 
 		if (comm->m_ip->count_poe[comm->m_ip->count_msg] >= 9)
 		{
-			//wxMessageBox(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
 			comm->m_ip->count_poe[comm->m_ip->count_msg] = 9;
 			ButtonClicked();
 		}
@@ -777,7 +706,6 @@ void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
 	}
 	else
 	{
-		//count_poe++;
 		text_main = ("MESSAGE PGE+ RECEIVED");
 
 		//send text to different text boxes
@@ -785,8 +713,6 @@ void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
 		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_poe));
 		comm->m_midp->m_text_mid->SetLabel(text_main);
 	}
-
-
 }
 
 void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
@@ -804,7 +730,6 @@ void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
 			comm->m_ip->count_poe[comm->m_ip->count_msg]--;
 			ButtonClicked();
 		}
-
 	}
 	else
 	{
@@ -816,10 +741,13 @@ void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
 		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_poe));
 		comm->m_midp->m_text_mid->SetLabel(text_main);
 	}
-
 }
 
-
+//======================================================================================================================================
+//This finction is called only when the config flag is false
+//Only buttons POE and MSG will call this function
+//The main purpose of ButtonClicked() is to switch between the IP UI windows and modify values stored in them
+//======================================================================================================================================
 
 void MainPanel::ButtonClicked()
 {
@@ -1065,8 +993,12 @@ void MainPanel::OnButtonEvent(wxCommandEvent& WXUNUSED(event))
 
 
 }
-
+//======================================================================================================================================
+// In this part we will deal with the constructors of the auxilary panels and events connected to them
+//======================================================================================================================================
+// 
 //RightPanel setup
+//As a condition we provide the size of the panel in relation to the screen resolution, and relative point at which we will start to draw
 
 RightPanel::RightPanel(wxPanel* parent)
 	: wxPanel(parent, wxID_ANY, wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) * 3 / 4, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3),
@@ -1074,8 +1006,9 @@ RightPanel::RightPanel(wxPanel* parent)
 {
 	//font setup
 	right_font = new wxFont(38, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
-
-	count_r = 0;
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	count_r = 0; // this counter will be removed soon
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//text setup
 	m_text = new wxStaticText(this, -1, wxT("0000000000000"), wxPoint((wxSystemSettings::GetMetric(wxSYS_SCREEN_X) * 4 / 5) / 2, 10));
 	m_text_r = new wxStaticText(this, -1, wxT("MESSAGE FOR RIGHT SCREEN\nWILL APPEAR HERE"), wxPoint(10, 30));
@@ -1093,7 +1026,7 @@ RightPanel::RightPanel(wxPanel* parent)
 	Connect(ID_RU, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(RightPanel::OnRightUp));
 
-	//creating button for RoghtDWN and connect it to the proper event
+	//creating button for RightDWN and connect it to the proper event
 	m_right_down = new wxButton(this, ID_RD, wxT("R DWN"),
 		wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4 - 100,
 			wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3 - 100));
@@ -1101,11 +1034,12 @@ RightPanel::RightPanel(wxPanel* parent)
 	m_right_down->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_RD, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(RightPanel::OnRightDown));
-
-	m_IP_value = 0;
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	m_IP_value = 0; //the name of this counters will be changed
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
-//Events on buttons in right panel//
+//Events on buttons in right panel  - only to display text for now - - - counters are unused//
 
 void RightPanel::OnRightUp(wxCommandEvent& WXUNUSED(event))
 {
@@ -1181,7 +1115,7 @@ LeftPanel::LeftPanel(wxPanel* parent)
 	m_IP_index = 0;
 }
 
-//Events on buttons in left panel//
+//Events on buttons in left panel - - for now only to display text - counters are unused////
 
 void LeftPanel::OnLeftUp(wxCommandEvent& WXUNUSED(event))
 {
@@ -1224,6 +1158,7 @@ void LeftPanel::OnLeftDown(wxCommandEvent& WXUNUSED(event))
 	comm->m_midp->m_text_mid->SetLabel(text_l);
 }
 
+//middle panel will be modified only by other events, doesnt have any event by itself
 
 MidlePanel::MidlePanel(wxPanel* parent)
 	: wxPanel(parent, wxID_ANY, wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3),
@@ -1249,6 +1184,7 @@ MidlePanel::MidlePanel(wxPanel* parent)
 
 //additional screen -> will display only page counter in the future
 //adjustment of size will be needed on final device
+
 PgCounterPanel::PgCounterPanel(wxPanel* parent)
 	: wxPanel(parent, wxID_ANY, wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) * 3 / 4 - 250, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) - 100),
 		wxSize(200, 90),
