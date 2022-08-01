@@ -4,12 +4,9 @@
 
 #include "wx/config.h"
 
-#ifndef wxHAS_IMAGES_IN_RESOURCES
-#include "../sample.xpm"
-#endif
 
 #include "Button_handlers.h"
-#include "Net.h"
+//#include "Net.h"
 
 //MainPanel scaling with the screen resolution
 
@@ -19,19 +16,30 @@ MainPanel::MainPanel(wxPanel* parent)
 {
 	
 	//font setting
-	main_font = new wxFont(50, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial"/*"New Font"*/);
+	main_font = new wxFont(50, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial" /*"New Font"*/);
 	//counters for handling number of clicks -> for future use
 	//main_font->AddPrivateFont("H:\\Repos\\DCDU-master\\DCDU_REGULAR.ttf");
 	//setting the parent for enabling communication between panels
 	m_parent = parent;
 	//display the standby message
-	m_text_main = new wxStaticText(this, -1, wxT(""), wxPoint(10, 20));
+
+	m_rtext_main = new wxRichTextCtrl(this, -1, wxT(""), wxPoint(10, 20), wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X)-20,
+		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 40) , /*wxBORDER_SUNKEN*/ wxNO_BORDER);
+	m_rtext_main->SetFont(*main_font);
+	//m_rtext_main->SetForegroundColour(wxColor(255, 255, 255));
+	m_rtext_main->BeginTextColour(*wxWHITE);
+	m_rtext_main->SetBackgroundColour(wxColor(0, 0, 0));
+	m_rtext_main->ForceUpper();
+	m_rtext_main->DiscardEdits();
+	m_rtext_main->GetVisibleLineForCaretPosition(true);
+	m_rtext_main->Enable(false);
+	//m_text_main = new wxStaticText(this, -1, wxT(""), wxPoint(10, 20));
 	
-	m_text_main->SetFont(*main_font);
-	m_text_main->SetForegroundColour(wxColor(0, 255, 255));
-	m_text_main->Wrap(wxSystemSettings::GetMetric(wxSYS_SCREEN_X));
+	//m_text_main->SetFont(*main_font);
+	//m_text_main->SetForegroundColour(wxColor(0, 255, 255));
+	//m_text_main->Wrap(wxSystemSettings::GetMetric(wxSYS_SCREEN_X));
 	//creating button for MSG+ and connect it to the proper event
-	msg_plus = new wxButton(this, ID_MSG_PLUS, wxT("MSG+"),
+	msg_plus = new wxButton(m_rtext_main, ID_MSG_PLUS, wxT("MSG+"),
 		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 100));
 	msg_plus->SetBackgroundColour(wxColor(110, 110, 110));
 	msg_plus->SetForegroundColour(wxColor(*wxWHITE));
@@ -329,6 +337,306 @@ IpPanel::~IpPanel()
 	pConfig->Write("/TestValue", "A test va88");
 }
 
+
+
+void IpPanel::NetConfig()
+{
+	/* communicate class to handle data transfer between the panels */
+	//Communicate* comm = (Communicate*)m_parent->GetParent();
+
+	bool e_read_cfg_ip = false;
+	bool e_read_cfg_port = false;
+
+	//zero base indexes of dots in IP adress from config
+	int first_dot_i = 0, second_dot_i = 0, third_dot_i = 0;
+
+	//some int variable to define difference in size between string readed from cfg file
+	//to size of buffer [50] char, fill with ' ' sign
+	int lengthen_cfg_str;
+	lengthen_cfg_str = wxStrlen(ip_from_cfg);
+
+	for (int inee = lengthen_cfg_str; inee <= 20; inee++)
+	{
+		ip_from_cfg.append(' ');
+
+	}
+
+	//to be sure not to work on empty string
+
+	if (ip_from_cfg.Length() > 0)
+	{
+		// some local iterators
+		// 'i' index is used to iterate over IP string readed from config file
+		// 'j' index is the index of complete ip adress to display in form of ___.___.___.___
+
+		int i = 0, j = 0, dot_count = 0;
+
+		//main loop to fill all necessery spaces in the buffer with proper signs from cfg file
+		for (wxString::const_iterator it = ip_from_cfg.begin(); it != ip_from_cfg.end() - 5; it++)
+		{
+			//if dot is present two places earlier tha should, we would like to make sure this doesnt hapend at any point of IP adress
+			//in if condition we specify index of 'i' at which such situation could take place
+			//then we chech if the dot is present, and
+			if ((i <= 1 && ip_from_cfg[i] == '.') ||
+				(i > 2 && i <= 5 && (ip_from_cfg[i] == '.')) && j == 5 && dot_count == 1 ||
+				(i > 4 && i <= 9 && (ip_from_cfg[i] == '.')) && j == 9 && dot_count == 2)
+			{
+				//dot_count told us how many dots are present in the buffer
+				dot_count++;
+
+				//add null value to the current index
+				ip_to_display[j] = NULL;
+				//set null value at second index 
+				ip_to_display[j + 1] = NULL;
+				//and then place the dot in proper place
+				ip_to_display[j + 2] = ip_from_cfg[i];
+
+				//and set all indexers at correct value;
+				j += 3;
+				i++;
+
+			}
+			//check if the '.' is present in the IP one place erlier than should
+			else if ((i > 1 && i <= 2 && ip_from_cfg[i] == '.') ||
+				(i > 2 && i <= 6 && ip_from_cfg[i] == '.') && dot_count == 1 && j == 6 ||
+				(i > 6 && i <= 10 && ip_from_cfg[i] == '.' && dot_count == 2) && j == 10)
+			{
+				//dot_count told us how many dots are present in the buffer
+				dot_count++;
+				//set value at current index as null 
+				ip_to_display[j] = NULL;
+				//and then place the dot in place
+				ip_to_display[j + 1] = ip_from_cfg[i];
+
+				//and set all indexers at correct value;
+
+				j += 2;
+				i++;
+
+			}
+			//Then change empty spaces added before to NULL values
+			else if (ip_from_cfg[i] == ' ')
+			{
+				ip_to_display[j] = NULL;
+
+				//and shift indexes
+				i++;
+				j++;
+			}
+
+			//In normal case, just place values from cfg file in place
+			else
+			{
+				ip_to_display[j] = ip_from_cfg[i];
+				if (ip_from_cfg[i] == '.')
+				{
+					dot_count++;
+				}
+				//and ofc shift the iterators
+				i++;
+				j++;
+			}
+		}
+
+	}//and error to handle if case if sth goes wrong
+	else e_read_cfg_ip = true;
+
+	//And the port number from config need to be placed in proper char array
+	//but firstly make sure that the cfg string is long enough
+
+	int lengthen_cfg_str_port;
+	lengthen_cfg_str_port = wxStrlen(port_from_cfg);
+
+
+	for (int i = lengthen_cfg_str_port; i <= 7; i++)
+	{
+		port_from_cfg.append(' ');
+	}
+
+	int i = 0;
+
+
+	for (wxString::const_iterator it = port_from_cfg.begin(); it != port_from_cfg.end(); it++)
+	{
+
+		if (port_from_cfg[i] == ' ')
+		{
+			port_to_dispaly[i] = NULL;
+
+		}
+		else
+		{
+			port_to_dispaly[i] = port_from_cfg[i];
+		}
+		i++;
+	}
+
+	//After all values from string are loaded to the correct places in the char array, we can also update the values used as a iterators
+	//on button events to increment or decrement numbers in IP adresses
+	//In theory the char aray members can be use to that purpose, but in that case we need additional values to store the index of
+	//IP digit we would like to modify, so for now ill stay with the solution where the iterators are stored in separate chars.
+	//this modifier value is needed to skip dots in the IP adress when transfering them to the counters. 
+	//the ip_to_display caounter is [i - 1] becaouse count_poe is a 1 base index
+	int some_modifier = 0;
+	for (int i = 1; i < 21; i++)
+	{
+		if (i <= 15)
+		{
+			if (ip_to_display[i - 1] != '.' && ip_to_display[i - 1] != 0)
+				count_poe[i - some_modifier] = ip_to_display[i - 1] - 48;
+			else if (ip_to_display[i - 1] == 0)
+				count_poe[i - some_modifier] = ip_to_display[i - 1];
+			else some_modifier++;
+		}
+		else
+		{
+			count_poe[i - some_modifier] = port_to_dispaly[i - 16] - 48;
+		}
+
+	}
+}
+
+void MainPanel::OnSocketEvent(wxSocketEvent& event)
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	//wxBuffer to collect data from socket with 16 black spaces
+	//Propably we will need only 1 sign at the time, but its larger for future use
+	wxCharBuffer buf2 = "                 ";
+
+	//here we will handle the socket events 
+	switch (event.GetSocketEvent())
+	{
+		//when data arrived
+	case wxSOCKET_INPUT:
+
+		//reading 15 characters (1 should be enough, but to be safe, larger buffor was applied)
+		//and save them to the buffer buf2 || if sended data is shorter, the read function will
+		//collect only available data  
+		m_sock->Read(buf2.data(), 15);
+		Received.append(buf2.data());
+		Received.Trim();
+
+		//Received[0] = buf2.data();
+		//write back data from buf2, 
+
+		m_sock->Write(Received, Received.length());
+		//m_sock->Write(buf2.data(), wxStrlen(buf2.data()));
+
+		//and display them on the scren, clean screen first
+		m_rtext_main->Clear();
+		//m_text_main->SetLabel(buf2.data());
+
+		m_rtext_main->BeginTextColour(*wxWHITE);
+		m_rtext_main->WriteText(Received);
+		m_rtext_main->SetLabel(Received);
+		break;
+
+		//when we lost connection with server
+	case wxSOCKET_LOST:
+
+		//display the inflo about the event
+		m_rtext_main->SetLabel("Socket connection error");
+		Disconnect();
+		break;
+
+		//when we establish connection with server
+	case wxSOCKET_CONNECTION:
+
+		//display the inflo about the connection
+		m_rtext_main->SetForegroundColour(wxColor(0, 255, 0));
+		m_rtext_main->SetLabel("... socket is now connected.");
+		comm->m_ip->Hide();
+		break;
+
+		//Other events will trigger this action
+	default:
+		m_rtext_main->BeginTextColour(*wxWHITE);
+		m_rtext_main->SetLabel("Unknown socket event!!!");
+		break;
+	}
+}
+
+void MainPanel::OnOpenConnection(wxCommandEvent& WXUNUSED(event))
+{
+	//This function will be handle later when physical buttons wil be in place
+	// OpenConnection(wxSockAddress::IPV4);
+}
+
+bool MainPanel::OpenConnection(wxSockAddress::Family family)
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+
+	//Here we define strings to store the values readed from config file
+	wxString m_IP;
+	wxString m_PORT;
+
+	//Define IP adrees
+	wxIPaddress* addr;
+	// and set it to be IP adress type 4
+	wxIPV4address addr4;
+	addr = &addr4;
+
+	//Open the config file
+	wxConfigBase* pConfig = wxConfigBase::Get();
+	//when there is no such file - return 
+	if (pConfig == NULL)
+		return false;
+
+	// and read the control's values to the config
+	m_IP = pConfig->Read("/Controls/m_IP");
+	m_PORT = pConfig->Read("/Controls/m_PORT");
+
+
+	//initialize the adress with IP and PORT from config file
+	addr->Hostname(m_IP);
+	addr->Service(m_PORT);
+
+	//And finally connect to the server
+
+	m_sock->Connect(*addr, false);
+
+	// we connect asynchronously and will get a wxSOCKET_CONNECTION event when
+	// the connection is really established
+
+	// if you want to make sure that connection is established right here you
+	// could call WaitOnConnect(timeout) instead
+
+	//We can check if the connection is established
+	if (m_sock->IsConnected())
+	{
+		//and inform the user about it
+
+		m_rtext_main->SetLabel("connected");
+		return true;
+	}
+	else
+	{
+		//or when we cannot connect with the provided adress, then display the error
+		m_rtext_main->SetLabel("connection error");
+		comm->m_ip->Config_flag = true;
+		return false;
+	}
+	m_busy = false;
+
+}
+
+void MainPanel::Disconnect()
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (m_sock->IsConnected())
+	{
+		m_sock->Close();
+		comm->m_midp->m_text_mid->SetLabel("Disconnected succesfully");
+	}
+	else
+	{
+		comm->m_midp->m_text_mid->SetLabel("No connection found");
+
+	}
+
+}
+
+
 //======================================================================================================================================
 // In this part we will deal with the constructors of the auxilary panels and events connected to them
 //======================================================================================================================================
@@ -455,3 +763,552 @@ PgCounterPanel::PgCounterPanel(wxPanel* parent)
 	count_pg = 0;
 }
 
+
+//======================================================================================================================================
+//Events on buttons in main panel//
+//======================================================================================================================================
+
+void MainPanel::OnPrintEvent(wxCommandEvent& WXUNUSED(event))
+{
+	/* communicate class to handle data transfer between the panels */
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	comm->m_mp->m_rtext_main->SetLabel("");
+	if (m_sock->IsConnected())
+	{
+		Disconnect();
+		comm->m_ip->Config_flag = true;
+		comm->m_ip->Show(true);
+
+	}
+	else if (comm->m_ip->Config_flag)
+	{
+		//For now Print button is used only deal with the data supplied by the user,
+		wxString ip_from_user;
+		wxString port_from_user;
+		//wxIPV4address adr;
+		wxConfigBase* pConfig = wxConfigBase::Get();
+
+		comm->m_ip->Show(true);
+
+		addr = &addr4;
+
+
+		//after PRINT button clicked, check every part of IP adrees, if empty get back to typing
+		if ((comm->m_ip->m_ip_1->GetValue().Length() + comm->m_ip->m_ip_2->GetValue().Length() + comm->m_ip->m_ip_3->GetValue().Length()) == 0 ||
+			(comm->m_ip->m_ip_4->GetValue().Length() + comm->m_ip->m_ip_5->GetValue().Length() + comm->m_ip->m_ip_6->GetValue().Length()) == 0 ||
+			(comm->m_ip->m_ip_7->GetValue().Length() + comm->m_ip->m_ip_8->GetValue().Length() + comm->m_ip->m_ip_9->GetValue().Length()) == 0 ||
+			(comm->m_ip->m_ip_10->GetValue().Length() + comm->m_ip->m_ip_11->GetValue().Length() + comm->m_ip->m_ip_12->GetValue().Length()) == 0 ||
+			(comm->m_ip->m_ip_13->GetValue().Length() + comm->m_ip->m_ip_14->GetValue().Length() + comm->m_ip->m_ip_15->GetValue().Length() +
+				comm->m_ip->m_ip_16->GetValue().Length() + comm->m_ip->m_ip_17->GetValue().Length() == 0))
+		{
+			comm->m_midp->m_text_mid->SetLabel("Typed IPv4 incorrect");
+		}
+		else
+		{
+			//when all parts of ip adress contain data we can create IP and Host name from single leters 
+			ip_from_user = comm->m_ip->m_ip_1->GetValue() + comm->m_ip->m_ip_2->GetValue() + comm->m_ip->m_ip_3->GetValue() + "."
+				+ comm->m_ip->m_ip_4->GetValue() + comm->m_ip->m_ip_5->GetValue() + comm->m_ip->m_ip_6->GetValue() + "."
+				+ comm->m_ip->m_ip_7->GetValue() + comm->m_ip->m_ip_8->GetValue() + comm->m_ip->m_ip_9->GetValue() + "."
+				+ comm->m_ip->m_ip_10->GetValue() + comm->m_ip->m_ip_11->GetValue() + comm->m_ip->m_ip_12->GetValue();
+			port_from_user = comm->m_ip->m_ip_13->GetValue() + comm->m_ip->m_ip_14->GetValue() + comm->m_ip->m_ip_15->GetValue()
+				+ comm->m_ip->m_ip_16->GetValue() + comm->m_ip->m_ip_17->GetValue();
+
+			//and save them to the config file
+			pConfig->Write("/Controls/m_IP", ip_from_user);
+			pConfig->Write("/Controls/m_PORT", port_from_user);
+
+			//after we saved the data, double check if they are the same as the value in config file,
+			//only then we can send the values to the IpPanel, open conection, and then destroy the IpPanel
+			if (pConfig->Read("/Controls/m_IP") == ip_from_user && pConfig->Read("/Controls/m_PORT") == port_from_user)
+			{
+				comm->m_midp->m_text_mid->SetLabel("Adress saved succesfully");
+				wxMessageBox("test");
+				comm->m_ip->hostname = ip_from_user;
+				comm->m_ip->port = port_from_user;
+				//comm->m_ip->Config_flag = false;
+
+				if (OpenConnection(wxSockAddress::IPV4))
+				{
+					//	comm->m_ip->Hide();
+				}
+				else
+				{
+					//	 m_text_main->SetLabel("d");
+				}
+
+			}
+		}
+	}
+	else
+	{
+		m_sock->Close();
+		if (m_sock->IsDisconnected())
+		{
+			comm->m_ip->Config_flag = true;
+			comm->m_midp->m_text_mid->SetLabel("Disconnected");
+			comm->m_ip->Show(true);
+
+			//comm->m_ip->m_ip_1->SetFocus();
+			//comm->m_mp->Hide();
+		}
+	}
+}
+
+void MainPanel::OnMsgPlus(wxCommandEvent& WXUNUSED(event))
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+
+
+	if (comm->m_ip->Config_flag == true)
+	{
+		//	comm->m_ip->count_msg = 5;
+		if (comm->m_ip->count_msg >= 17)
+		{
+
+			comm->m_ip->count_msg = 17;
+			ButtonClicked();
+		}
+		else
+		{
+
+			comm->m_ip->count_msg++;
+			ButtonClicked();
+		}
+	}
+	else
+	{
+		//comm->m_ip->m_ip_1->SetFocus();
+
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_msg));
+		//send text to different text boxes
+		comm->m_mp->m_rtext_main->SetLabel(text_main);
+		comm->m_midp->m_text_mid->SetLabel(text_main);
+	}
+}
+
+
+void MainPanel::OnMsgMinus(wxCommandEvent& WXUNUSED(event))
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (comm->m_ip->Config_flag == true)
+	{
+
+		if (comm->m_ip->count_msg <= 1)
+		{
+			comm->m_ip->count_msg = 1;
+			ButtonClicked();
+		}
+		else
+		{
+			comm->m_ip->count_msg--;
+			ButtonClicked();
+		}
+
+	}
+	else
+	{
+		text_main = ("MESSAGE MSG- RECEIVED");
+
+		//send text to different text boxes
+		comm->m_mp->m_rtext_main->SetLabel(text_main);
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_msg));
+		comm->m_midp->m_text_mid->SetLabel(text_main);
+	}
+}
+
+void MainPanel::OnPOEPlus(wxCommandEvent& WXUNUSED(event))
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (comm->m_ip->Config_flag == true)
+	{
+
+		if (comm->m_ip->count_poe[comm->m_ip->count_msg] >= 9)
+		{
+			comm->m_ip->count_poe[comm->m_ip->count_msg] = 9;
+			ButtonClicked();
+		}
+		else
+		{
+			comm->m_ip->count_poe[comm->m_ip->count_msg]++;
+			ButtonClicked();
+		}
+
+	}
+	else
+	{
+		text_main = ("MESSAGE PGE+ RECEIVED");
+
+		//send text to different text boxes
+		comm->m_mp->m_rtext_main->SetLabel(text_main);
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_poe));
+		comm->m_midp->m_text_mid->SetLabel(text_main);
+	}
+}
+
+void MainPanel::OnPOEMinus(wxCommandEvent& WXUNUSED(event))
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	if (comm->m_ip->Config_flag == true)
+	{
+		if (comm->m_ip->count_poe[comm->m_ip->count_msg] <= -1)
+		{
+			comm->m_ip->count_poe[comm->m_ip->count_msg] = -1;
+			ButtonClicked();
+		}
+		else
+		{
+			comm->m_ip->count_poe[comm->m_ip->count_msg]--;
+			ButtonClicked();
+		}
+	}
+	else
+	{
+		//count_poe--;
+		text_main = ("MESSAGE PGE- RECEIVED");
+
+		//send text to different text boxes
+		comm->m_mp->m_rtext_main->SetLabel(text_main);
+		comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), comm->m_ip->count_poe));
+		comm->m_midp->m_text_mid->SetLabel(text_main);
+	}
+}
+
+
+//======================================================================================================================================
+//Events on buttons in right bottom panel//
+//======================================================================================================================================
+
+void RightPanel::OnRightDown(wxCommandEvent& WXUNUSED(event))
+{
+	if (m_IP_value > 9)
+	{
+		m_IP_value = 0;
+	}
+	else
+	{
+		m_IP_value++;
+	}
+	count_r--;
+	text_r = "RIGHT DOWN";
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	//send text to different text boxes
+	comm->m_rp->m_text_r->SetLabel(text_r);
+	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_r));
+	comm->m_midp->m_text_mid->SetLabel(text_r);
+
+
+	//	if (wxGetKeyState(WXK_F1)) comm->m_mp->OnMultiButtons();
+
+
+}
+
+void RightPanel::OnRightUp(wxCommandEvent& WXUNUSED(event))
+{
+	if (m_IP_value > 9)
+	{
+		m_IP_value = 0;
+	}
+	else
+	{
+		m_IP_value++;
+	}
+
+	count_r++;
+	text_r = "RIGHT UP";
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	//send text to different text boxes
+	comm->m_rp->m_text_r->SetLabel(text_r);
+	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_r));
+	comm->m_midp->m_text_mid->SetLabel(text_r);
+}
+
+
+
+//======================================================================================================================================
+//Events on buttons in left bottom panel//
+//======================================================================================================================================
+
+void LeftPanel::OnLeftUp(wxCommandEvent& WXUNUSED(event))
+{
+	if (m_IP_index > 10)
+	{
+		m_IP_index = 0;
+	}
+	else
+	{
+		m_IP_index++;
+	}
+
+	count_l++;
+	text_l = "LEFT UP";
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	//send text to different text boxes
+	comm->m_lp->m_text_l->SetLabel(text_l);
+	comm->m_midp->m_text_mid->SetLabel(text_l);
+	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_l));
+
+}
+
+void LeftPanel::OnLeftDown(wxCommandEvent& WXUNUSED(event))
+{
+	if (m_IP_index < 0)
+	{
+		m_IP_index = 0;
+	}
+	else
+	{
+		m_IP_index--;
+	}
+
+	count_l--;
+	text_l = "LEFT DOWN";
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+	//send text to different text boxes
+	comm->m_lp->m_text_l->SetLabel(text_l);
+	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_l));
+	comm->m_midp->m_text_mid->SetLabel(text_l);
+}
+
+//======================================================================================================================================
+//This finction is called only when the config flag is false
+//Only buttons POE and MSG will call this function
+//The main purpose of ButtonClicked() is to switch between the IP UI windows and modify values stored in them
+//======================================================================================================================================
+
+void MainPanel::ButtonClicked()
+{
+	Communicate* comm = (Communicate*)m_parent->GetParent();
+
+	if (comm->m_ip->Config_flag == true)
+	{
+
+		switch (comm->m_ip->count_msg)
+		{
+
+		case 1:
+			comm->m_ip->m_ip_1->SetFocus();
+
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_1->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_1->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+
+			break;
+
+		case 2:
+
+			comm->m_ip->m_ip_2->SetFocus();
+
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_2->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_2->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+		case 3:
+
+			comm->m_ip->m_ip_3->SetFocus();
+
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_3->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_3->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+		case 4:
+			comm->m_ip->m_ip_4->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_4->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_4->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 5:
+			comm->m_ip->m_ip_5->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_5->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_5->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 6:
+			comm->m_ip->m_ip_6->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_6->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_6->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 7:
+			comm->m_ip->m_ip_7->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_7->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_7->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 8:
+			comm->m_ip->m_ip_8->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_8->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_8->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 9:
+			comm->m_ip->m_ip_9->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_9->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_9->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 10:
+			comm->m_ip->m_ip_10->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_10->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_10->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 11:
+			comm->m_ip->m_ip_11->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_11->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_11->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 12:
+			comm->m_ip->m_ip_12->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_12->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_12->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 13:
+			comm->m_ip->m_ip_13->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_13->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_13->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 14:
+			comm->m_ip->m_ip_14->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_14->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_14->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 15:
+			comm->m_ip->m_ip_15->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_15->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_15->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 16:
+			comm->m_ip->m_ip_16->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_16->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_16->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		case 17:
+			comm->m_ip->m_ip_17->SetFocus();
+			if (comm->m_ip->count_poe[comm->m_ip->count_msg] == -1)
+			{
+				comm->m_ip->m_ip_17->SetValue("");
+			}
+			else
+			{
+				comm->m_ip->m_ip_17->SetValue(wxString::Format(wxT("%i"), comm->m_ip->count_poe[comm->m_ip->count_msg]));
+			}
+			break;
+
+			break;
+		}
+	}
+}

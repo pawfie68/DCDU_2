@@ -27,10 +27,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Button_handlers.h" />
     <ClInclude Include="Communicate.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="Net.h" />
     <ClInclude Include="Panels.h" />
   </ItemGroup>
   <ItemGroup>
