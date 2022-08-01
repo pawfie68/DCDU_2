@@ -22,9 +22,8 @@ public:
     void OnMsgMinus(wxCommandEvent& event);
     void OnPOEPlus(wxCommandEvent& event);
     void OnPOEMinus(wxCommandEvent& event);
-    void OnButtonEvent(wxCommandEvent& event);
+
     void OnPrintEvent(wxCommandEvent& event);
-    void OnMultiButtons();
     void ButtonClicked();
 
     //     void OnButtonCombination(wxCommandEvent& event);
@@ -34,6 +33,10 @@ public:
     wxButton* m_POE_plus;
     wxButton* m_POE_minus;
     wxButton* m_print;
+
+    wxString Received;
+
+    //wxRichText
 
     //text box for main window
     wxStaticText* m_text_main;
@@ -62,7 +65,9 @@ public:
     void OnSocketEvent(wxSocketEvent& event);
 
     //open connection with specified parameters
-    void OpenConnection(wxSockAddress::Family family);
+    bool OpenConnection(wxSockAddress::Family family);
+    void Disconnect();
+
 
     const unsigned char len = 32;
 
@@ -87,41 +92,25 @@ public:
     IpPanel(wxPanel* parent);
     ~IpPanel();
 
+    void NetConfig();
+
     char count_msg = 1;
-    //some counters to deal with the settings of every single digits of IP, this could be done by array, 
-    //but then another values to store the current position will be needed so ill keep it this way for now
-    //char count_msg_1 = 0;
-    //char count_msg_2 = 0;
-    //char count_msg_3 = 0;
-    ////and dot here
-    //char count_msg_5 = 0;
-    //char count_msg_6 = 0;
-    //char count_msg_7 = 0;
-    ////and dot here
-    //char count_msg_9 = 0;
-    //char count_msg_10 = 0;
-    //char count_msg_11 = 0;
-    ////and dot here
-    //char count_msg_13 = 0;
-    //char count_msg_14 = 0;
-    //char count_msg_15 = 0;
-    ////and semicolon here
-    //char count_msg_17 = 0;
-    //char count_msg_18 = 0;
-    //char count_msg_19 = 0;
-    //char count_msg_20 = 0;
-    //char count_msg_21 = 0;
+
 
     char ip_to_display[50];
     char port_to_dispaly[8];
 
+
     //char count_poe = -1;
-    char count_poe[18];
+    char count_poe[22];
 
     //flag for switching key functions between config and normal 
     bool Config_flag = true;
 
     wxStaticText* m_text_ip;
+
+    wxString ip_from_cfg;
+    wxString port_from_cfg;
 
     //sth to deal with cfg file
     wxString m_IP;

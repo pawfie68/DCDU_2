@@ -8,7 +8,7 @@ Communicate::Communicate(const wxString& title)
 {
     //defile the parent and setup background color of whole app, setup full screen with no borders
     m_parent = new wxPanel(this, wxID_ANY);
-    m_parent->SetBackgroundColour(wxColor(*wxBLACK));
+    m_parent->SetBackgroundColour(wxColor(123,123,123/**wxBLACK*/));
     m_parent->SetWindowStyle(wxFULLSCREEN_ALL && wxBORDER_NONE);
 
     //display static lines separating text areas
@@ -42,7 +42,7 @@ Communicate::Communicate(const wxString& title)
     hbox->Add(m_ip, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_lp, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_rp, 1, wxEXPAND | wxALL, 5);
-    hbox->Add(m_mp, 1, wxEXPAND | wxALL, 5);
+   // hbox->Add(m_mp, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_midp, 1, wxEXPAND | wxALL, 5);
     hbox->Add(m_pgp, 1, wxEXPAND | wxALL, 5);
     //m_parent->SetSizer(hbox);
