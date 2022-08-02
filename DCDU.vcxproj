@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Colors_def.h" />
     <ClInclude Include="Communicate.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Panels.h" />

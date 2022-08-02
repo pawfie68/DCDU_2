@@ -1,6 +1,6 @@
 #include <wx/stattext.h>
 #include "Communicate.h"
-
+#include "Colors_def.h"
 
 #include "wx/config.h"
 
@@ -11,36 +11,53 @@
 //MainPanel scaling with the screen resolution
 
 MainPanel::MainPanel(wxPanel* parent)
-	: wxPanel(parent, -1, wxPoint(-1, -1), wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
-		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3), /*wxBORDER_SUNKEN*/ wxNO_BORDER )
+	: wxPanel(parent, -1, wxPoint(-1, -1), wxSize(X_screen,
+		Y_screen * 2 / 3), /*wxBORDER_SUNKEN*/ wxNO_BORDER )
 {
 	
 	//font setting
-	main_font = new wxFont(50, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial" /*"New Font"*/);
+	main_font = new wxFont(font_size_main, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial" /*"New Font"*/);
+	top_font = new wxFont(font_size_top, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial" /*"New Font"*/);
 	//counters for handling number of clicks -> for future use
 	//main_font->AddPrivateFont("H:\\Repos\\DCDU-master\\DCDU_REGULAR.ttf");
 	//setting the parent for enabling communication between panels
 	m_parent = parent;
 	//display the standby message
+	m_top_open = new wxStaticText(this, -1, wxT(""), wxPoint((X_screen * 3 / 4), 10), wxSize((X_screen * 1 / 4) - 10,
+		(Y_screen / 10) - 20), /*wxBORDER_SUNKEN*/ /*wxNO_BORDER*/ wxALIGN_RIGHT);
+	m_top_open->SetForegroundColour(wxColor(CYAN));
+	m_top_open->SetBackgroundColour(wxColor(BLACK));
+	m_top_open->SetFont(*main_font);
+	//m_top_open->
+	//m_top_open->do
+	m_top_open->SetLabel("OPEN");
+	//m_top_main->Hide();
 
-	m_rtext_main = new wxRichTextCtrl(this, -1, wxT(""), wxPoint(10, 20), wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X)-20,
-		wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 40) , /*wxBORDER_SUNKEN*/ wxNO_BORDER);
+
+	m_top_main = new wxStaticText(this, -1, wxT("Connecting..."), wxPoint(10, 10), wxSize((X_screen*3/4) - 20,
+		(Y_screen/10)-20), wxBORDER_SUNKEN /*wxNO_BORDER*/ );
+	m_top_main->SetForegroundColour(wxColor(GREEN));
+	m_top_main->SetBackgroundColour(wxColor(BLACK));
+	m_top_main->SetFont(*top_font);
+	//m_top_main->Hide();
+
+	m_rtext_main = new wxRichTextCtrl(this, -1, wxT(""), wxPoint(10, (Y_screen/10)-10), wxSize(X_screen-20,
+		Y_screen* 9/10 * 2 / 3 - 20) , wxBORDER_SUNKEN /*wxNO_BORDER*/);
 	m_rtext_main->SetFont(*main_font);
-	//m_rtext_main->SetForegroundColour(wxColor(255, 255, 255));
-	m_rtext_main->BeginTextColour(*wxWHITE);
-	m_rtext_main->SetBackgroundColour(wxColor(0, 0, 0));
+
+	m_rtext_main->BeginTextColour(wxColor(WHITE));
+	m_rtext_main->SetBackgroundColour(wxColor(BLACK));
 	m_rtext_main->ForceUpper();
 	m_rtext_main->DiscardEdits();
 	m_rtext_main->GetVisibleLineForCaretPosition(true);
+	m_rtext_main->ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_NEVER);
+	m_rtext_main->SetScrollPageSize(((X_screen * 3 / 4) - 20), (Y_screen / 10) - 20);
 	m_rtext_main->Enable(false);
-	//m_text_main = new wxStaticText(this, -1, wxT(""), wxPoint(10, 20));
-	
-	//m_text_main->SetFont(*main_font);
-	//m_text_main->SetForegroundColour(wxColor(0, 255, 255));
-	//m_text_main->Wrap(wxSystemSettings::GetMetric(wxSYS_SCREEN_X));
+	m_rtext_main->Hide();
+
 	//creating button for MSG+ and connect it to the proper event
-	msg_plus = new wxButton(m_rtext_main, ID_MSG_PLUS, wxT("MSG+"),
-		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 100));
+	msg_plus = new wxButton(this, ID_MSG_PLUS, wxT("MSG+"),
+		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 100));
 	msg_plus->SetBackgroundColour(wxColor(110, 110, 110));
 	msg_plus->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_MSG_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -48,7 +65,7 @@ MainPanel::MainPanel(wxPanel* parent)
 
 	//creating button for MSG- and connect it to the proper event
 	msg_minus = new wxButton(this, ID_MSG_MINUS, wxT("MSG-"),
-		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 50));
+		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 50));
 	msg_minus->SetBackgroundColour(wxColor(110, 110, 110));
 	msg_minus->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -56,7 +73,7 @@ MainPanel::MainPanel(wxPanel* parent)
 
 	//creating button for POE+ and connect it to the proper event
 m_POE_plus = new wxButton(this, ID_POE_PLUS, wxT("PGE +"),
-	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 100));
+	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 100));
 m_POE_plus->SetBackgroundColour(wxColor(110, 110, 110));
 m_POE_plus->SetForegroundColour(wxColor(*wxWHITE));
 Connect(ID_POE_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -64,7 +81,7 @@ Connect(ID_POE_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
 
 //creating button for POE+ and connect it to the proper event
 m_POE_minus = new wxButton(this, ID_POE_MINUS, wxT("PGE -"),
-	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 - 50));
+	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 50));
 m_POE_minus->SetBackgroundColour(wxColor(110, 110, 110));
 m_POE_minus->SetForegroundColour(wxColor(*wxWHITE));
 Connect(ID_POE_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -119,17 +136,7 @@ if (comm->m_ip->Config_flag == false)
 }
 else
 {
-	// we want to set focus on all elements of IP panel one by one, to display them on the front of the main app window
-	comm->m_ip->SetFocus();
-	comm->m_ip->m_ip_2->SetFocus();
-	comm->m_ip->m_ip_3->SetFocus(); comm->m_ip->m_ip_3->SetFocus();
-	comm->m_ip->m_ip_5->SetFocus(); comm->m_ip->m_ip_6->SetFocus();
-	comm->m_ip->m_ip_7->SetFocus(); comm->m_ip->m_ip_8->SetFocus();
-	comm->m_ip->m_ip_9->SetFocus(); comm->m_ip->m_ip_10->SetFocus();
-	comm->m_ip->m_ip_11->SetFocus(); comm->m_ip->m_ip_12->SetFocus();
-	comm->m_ip->m_ip_13->SetFocus(); comm->m_ip->m_ip_14->SetFocus();
-	comm->m_ip->m_ip_15->SetFocus(); comm->m_ip->m_ip_16->SetFocus();
-	comm->m_ip->m_ip_17->SetFocus(); comm->m_ip->m_ip_1->SetFocus();
+	comm->m_ip->IpRefresh();
 }
 
 }
@@ -321,6 +328,21 @@ IpPanel::IpPanel(wxPanel* parent)
 		ip_setup_desc->SetLabel(description);	
 }
 
+void IpPanel::IpRefresh()
+{
+	// we want to set focus on all elements of IP panel one by one, to display them on the front of the main app window
+	SetFocus();
+	m_ip_2->SetFocus();
+	m_ip_3->SetFocus(); m_ip_3->SetFocus();
+	m_ip_5->SetFocus(); m_ip_6->SetFocus();
+	m_ip_7->SetFocus(); m_ip_8->SetFocus();
+	m_ip_9->SetFocus(); m_ip_10->SetFocus();
+	m_ip_11->SetFocus(); m_ip_12->SetFocus();
+	m_ip_13->SetFocus(); m_ip_14->SetFocus();
+	m_ip_15->SetFocus(); m_ip_16->SetFocus();
+	m_ip_17->SetFocus(); m_ip_1->SetFocus();
+}
+
 IpPanel::~IpPanel()
 {
 	//when IpPanel is destroyed we want to save our IP/HOST data to proper file 
@@ -496,13 +518,17 @@ void IpPanel::NetConfig()
 	}
 }
 
+
+
 void MainPanel::OnSocketEvent(wxSocketEvent& event)
 {
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//wxBuffer to collect data from socket with 16 black spaces
 	//Propably we will need only 1 sign at the time, but its larger for future use
 	wxCharBuffer buf2 = "                 ";
-
+	wxString s_top;
+	wxString temp_adress;
+	wxString temp_port;
 	//here we will handle the socket events 
 	switch (event.GetSocketEvent())
 	{
@@ -516,42 +542,112 @@ void MainPanel::OnSocketEvent(wxSocketEvent& event)
 		Received.append(buf2.data());
 		Received.Trim();
 
+		m_rtext_main->BeginTextColour(*wxWHITE);
+
+		if (buf2.data()[0] == 'a')
+		{
+			m_rtext_main->BeginTextColour(wxColor(AMBER));
+			Received[0] = NULL;
+		}
+		else if (buf2.data()[0] == 'c')
+		{
+			m_rtext_main->BeginTextColour(wxColor(CYAN));
+			Received[0] = NULL;
+		}
+		else if (buf2.data()[0] == 'g')
+		{
+			m_rtext_main->BeginTextColour(wxColor(GREEN));
+			Received[0] = NULL;
+		}
+		else if (buf2.data()[0] == 'm')
+		{
+			m_rtext_main->BeginTextColour(wxColor(MAGENTA));
+			Received[0] = NULL;
+		}
+		else if (buf2.data()[0] == 'r')
+		{
+			m_rtext_main->BeginTextColour(wxColor(RED));
+			Received[0] = NULL;
+		}
+		else if (buf2.data()[0] == 'w')
+		{
+			m_rtext_main->BeginTextColour(wxColor(WHITE));
+			Received[0] = NULL;
+		}
+		else if (buf2.data()[0] == 'y')
+		{
+			m_rtext_main->BeginTextColour(wxColor(YELLOW));
+			Received[0] = NULL;
+		}
+		
+		Received = Received.Upper();
+
 		//Received[0] = buf2.data();
 		//write back data from buf2, 
-
+		
 		m_sock->Write(Received, Received.length());
+		m_rtext_main->Scroll(0, m_rtext_main->GetVirtualSize().y - m_rtext_main->GetClientSize().y);
 		//m_sock->Write(buf2.data(), wxStrlen(buf2.data()));
 
 		//and display them on the scren, clean screen first
-		m_rtext_main->Clear();
+		//m_rtext_main->Clear();
 		//m_text_main->SetLabel(buf2.data());
-
-		m_rtext_main->BeginTextColour(*wxWHITE);
 		m_rtext_main->WriteText(Received);
-		m_rtext_main->SetLabel(Received);
+		//m_rtext_main->AddParagraph(buf2.data());
+		//m_rtext_main->WriteText(buf2.data());
+		//m_rtext_main->SetLabel(Received);
+		
+		int test;
+		test = Received.length();
+
+		s_top.append("RECEIVED :");
+		s_top.append(wxString::Format(wxT("%ld"), test));
+		s_top.append(" BYTES");
+	
+
+		Received = "";
+		m_top_main->SetLabel(s_top);
+		m_top_main->Show();
 		break;
 
 		//when we lost connection with server
 	case wxSOCKET_LOST:
 
 		//display the inflo about the event
-		m_rtext_main->SetLabel("Socket connection error");
+		comm->m_midp->m_text_mid->SetForegroundColour(wxColor(255, 0, 0));
+		
+		comm->m_midp->m_text_mid->SetLabel("SOCKET CON ERROR");
+		comm->m_midp->m_text_mid->SetForegroundColour(wxColor(0, 255, 0));
 		Disconnect();
+		m_rtext_main->Hide();
+		m_top_main->Hide();
+		m_top_open->Hide();
+		comm->m_ip->Show();
+		comm->m_ip->IpRefresh();
 		break;
 
 		//when we establish connection with server
 	case wxSOCKET_CONNECTION:
 
 		//display the inflo about the connection
-		m_rtext_main->SetForegroundColour(wxColor(0, 255, 0));
-		m_rtext_main->SetLabel("... socket is now connected.");
+		
 		comm->m_ip->Hide();
+		m_rtext_main->Show();
+		m_top_main->Show();
+		m_top_open->Show();
+		m_top_main->SetLabel("CONNECTED TO SERVER");
 		break;
 
 		//Other events will trigger this action
 	default:
-		m_rtext_main->BeginTextColour(*wxWHITE);
-		m_rtext_main->SetLabel("Unknown socket event!!!");
+		
+		m_top_main->SetLabel("UNKNOWN SOCKET EVENT!!!");
+		
+		m_rtext_main->Hide();
+		m_top_main->Hide();
+		m_top_open->Hide();
+		comm->m_ip->Show();
+		comm->m_ip->IpRefresh();
 		break;
 	}
 }
@@ -645,8 +741,8 @@ void MainPanel::Disconnect()
 //As a condition we provide the size of the panel in relation to the screen resolution, and relative point at which we will start to draw
 
 RightPanel::RightPanel(wxPanel* parent)
-	: wxPanel(parent, wxID_ANY, wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) * 3 / 4, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3),
-		wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3), /*wxBORDER_SUNKEN*/  wxNO_BORDER)
+	: wxPanel(parent, wxID_ANY, wxPoint(X_screen * 3 / 4 , Y_screen * 2 / 3),
+		wxSize(X_screen / 4, Y_screen / 3), /*wxBORDER_SUNKEN*/  wxNO_BORDER)
 {
 	//font setup
 	right_font = new wxFont(38, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
@@ -654,12 +750,18 @@ RightPanel::RightPanel(wxPanel* parent)
 	count_r = 0; // this counter will be removed soon
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//text setup
-	m_text = new wxStaticText(this, -1, wxT("0000000000000"), wxPoint((wxSystemSettings::GetMetric(wxSYS_SCREEN_X) * 4 / 5) / 2, 10));
-	m_text_r = new wxStaticText(this, -1, wxT("MESSAGE FOR RIGHT SCREEN\nWILL APPEAR HERE"), wxPoint(10, 30));
-	m_text_r->SetFont(*right_font);
+	m_text = new wxStaticText(this, -1, wxT("0000000000000"), wxPoint((X_screen * 4 / 5) / 2, 10));
+	m_text_r1 = new wxStaticText(this, -1, wxT("MESSAGE#"), wxPoint(10, 30), wxSize(X_screen / 4 - X_screen/40, Y_screen / 30 - 50), wxALIGN_RIGHT);
+	m_text_r1->SetFont(*right_font);
+	m_text_r1->SetBackgroundColour(wxColor(BLACK));
+	m_text_r1->SetForegroundColour(wxColor(CYAN));
 
-	m_text_r->SetForegroundColour(wxColor(52, 235, 161));
-	m_text->SetForegroundColour(wxColor(255, 255, 255));
+	m_text_r2 = new wxStaticText(this, -1, wxT("WILCO#"), wxPoint(10, Y_screen/4 -50), wxSize(X_screen / 4 - X_screen / 40, Y_screen / 30 - 50), wxALIGN_RIGHT);
+	m_text_r2->SetFont(*right_font);
+
+	m_text_r2->SetBackgroundColour(wxColor(BLACK));
+	m_text_r2->SetForegroundColour(wxColor(CYAN));
+	m_text->SetForegroundColour(wxColor(CYAN));
 
 	//creating button for RightUP and connect it to the proper event
 	m_right_up = new wxButton(this, ID_RU, wxT("R UP"),
@@ -691,9 +793,19 @@ LeftPanel::LeftPanel(wxPanel* parent)
 {
 	left_font = new wxFont(38, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
 	count_l = 0;
-	m_text_l = new wxStaticText(this, -1, wxT("MESSAGE FOR LEFT SCREEN\nWILL APPEAR HERE"), wxPoint(10, 20));
-	m_text_l->SetFont(*left_font);
-	m_text_l->SetForegroundColour(wxColor(52, 235, 161));;
+
+	//m_text_r1 = new wxStaticText(this, -1, wxT("MESSAGE#"), wxPoint(10, 30), wxSize(X_screen / 4 - X_screen / 40, Y_screen / 30 - 50), wxALIGN_RIGHT);
+	//m_text_r2 = new wxStaticText(this, -1, wxT("WILCO#"), wxPoint(10, Y_screen / 4 - 50), wxSize(X_screen / 4 - X_screen / 40, Y_screen / 30 - 50), wxALIGN_RIGHT);
+
+
+	m_text_l1 = new wxStaticText(this, -1, wxT("#UNABLE"), wxPoint(X_screen / 40, 30), wxSize(X_screen / 4 + X_screen / 40, Y_screen / 30 - 50), wxALIGN_LEFT);
+	m_text_l1->SetFont(*left_font);
+	m_text_l1->SetForegroundColour(wxColor(0, 255, 255));;
+
+	m_text_l2 = new wxStaticText(this, -1, wxT("<OTHER"), wxPoint(X_screen / 40, Y_screen / 4 - 50), wxSize(X_screen / 4 + X_screen / 40, Y_screen / 30 - 50), wxALIGN_LEFT);
+	m_text_l2->SetFont(*left_font);
+	m_text_l2->SetForegroundColour(wxColor(0, 255, 255));;
+
 
 	//creating button for LeftUP and connect it to the proper event
 	m_left_up = new wxButton(this, ID_LU, wxT("L UP"),
@@ -992,7 +1104,7 @@ void RightPanel::OnRightDown(wxCommandEvent& WXUNUSED(event))
 	text_r = "RIGHT DOWN";
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//send text to different text boxes
-	comm->m_rp->m_text_r->SetLabel(text_r);
+	comm->m_rp->m_text_r1->SetLabel(text_r);
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_r));
 	comm->m_midp->m_text_mid->SetLabel(text_r);
 
@@ -1017,7 +1129,7 @@ void RightPanel::OnRightUp(wxCommandEvent& WXUNUSED(event))
 	text_r = "RIGHT UP";
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//send text to different text boxes
-	comm->m_rp->m_text_r->SetLabel(text_r);
+	comm->m_rp->m_text_r1->SetLabel(text_r);
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_r));
 	comm->m_midp->m_text_mid->SetLabel(text_r);
 }
@@ -1043,7 +1155,7 @@ void LeftPanel::OnLeftUp(wxCommandEvent& WXUNUSED(event))
 	text_l = "LEFT UP";
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//send text to different text boxes
-	comm->m_lp->m_text_l->SetLabel(text_l);
+	comm->m_lp->m_text_l1->SetLabel(text_l);
 	comm->m_midp->m_text_mid->SetLabel(text_l);
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_l));
 
@@ -1064,7 +1176,7 @@ void LeftPanel::OnLeftDown(wxCommandEvent& WXUNUSED(event))
 	text_l = "LEFT DOWN";
 	Communicate* comm = (Communicate*)m_parent->GetParent();
 	//send text to different text boxes
-	comm->m_lp->m_text_l->SetLabel(text_l);
+	comm->m_lp->m_text_l1->SetLabel(text_l);
 	comm->m_rp->m_text->SetLabel(wxString::Format(wxT("%d"), count_l));
 	comm->m_midp->m_text_mid->SetLabel(text_l);
 }

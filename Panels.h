@@ -14,6 +14,12 @@
 
 #include <wx/socket.h>
 
+//screen size 
+#define X_screen wxSystemSettings::GetMetric(wxSYS_SCREEN_X)
+#define Y_screen wxSystemSettings::GetMetric(wxSYS_SCREEN_Y)
+//font sizes
+#define font_size_main  wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) /16
+#define font_size_top  wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 30
 
 //Panels, buttons, text boxes and events are initialized here
 
@@ -50,6 +56,8 @@ public:
 
     //wxRichText
     wxRichTextCtrl* m_rtext_main;
+    wxStaticText* m_top_main;
+    wxStaticText* m_top_open;
     //text box for main window
   //  wxStaticText* m_text_main;
 
@@ -58,6 +66,7 @@ public:
 
     //font for handling custon fonts for main screen 
     wxFont* main_font;
+    wxFont* top_font;
     //socket for TCP/IP connection
     wxSocketClient* m_sock;
     //flag to determine if socket is buissy processing data/transfers
@@ -105,7 +114,7 @@ public:
     ~IpPanel();
 
     void NetConfig();
-
+    void IpRefresh();
     char count_msg = 1;
 
 
@@ -181,7 +190,8 @@ public:
     //text box for main window
     wxStaticText* m_text;
     wxString text_r;
-    wxStaticText* m_text_r;
+    wxStaticText* m_text_r1;
+    wxStaticText* m_text_r2;
     //some counters dot
     int count_r;
 
@@ -208,7 +218,8 @@ public:
     void OnLeftDown(wxCommandEvent& event);
     void OnSetText(wxCommandEvent& event);
 
-    wxStaticText* m_text_l;
+    wxStaticText* m_text_l1;
+    wxStaticText* m_text_l2;
 
     //some auxiliary variables
     wxString text_l;
