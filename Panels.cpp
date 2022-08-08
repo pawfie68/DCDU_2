@@ -57,7 +57,7 @@ MainPanel::MainPanel(wxPanel* parent)
 
 	//creating button for MSG+ and connect it to the proper event
 	msg_plus = new wxButton(this, ID_MSG_PLUS, wxT("MSG+"),
-		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 100));
+		wxPoint(10, Y_screen * 1 / 3 + 100));
 	msg_plus->SetBackgroundColour(wxColor(110, 110, 110));
 	msg_plus->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_MSG_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -65,7 +65,7 @@ MainPanel::MainPanel(wxPanel* parent)
 
 	//creating button for MSG- and connect it to the proper event
 	msg_minus = new wxButton(this, ID_MSG_MINUS, wxT("MSG-"),
-		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 50));
+		wxPoint(10, Y_screen * 1 / 3 + 50));
 	msg_minus->SetBackgroundColour(wxColor(110, 110, 110));
 	msg_minus->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_MSG_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -73,7 +73,7 @@ MainPanel::MainPanel(wxPanel* parent)
 
 	//creating button for POE+ and connect it to the proper event
 m_POE_plus = new wxButton(this, ID_POE_PLUS, wxT("PGE +"),
-	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 100));
+	wxPoint(X_screen - 100, Y_screen * 1 / 3 + 100));
 m_POE_plus->SetBackgroundColour(wxColor(110, 110, 110));
 m_POE_plus->SetForegroundColour(wxColor(*wxWHITE));
 Connect(ID_POE_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -81,7 +81,7 @@ Connect(ID_POE_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
 
 //creating button for POE+ and connect it to the proper event
 m_POE_minus = new wxButton(this, ID_POE_MINUS, wxT("PGE -"),
-	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3 + 50));
+	wxPoint(X_screen - 100, Y_screen * 1 / 3 + 50));
 m_POE_minus->SetBackgroundColour(wxColor(110, 110, 110));
 m_POE_minus->SetForegroundColour(wxColor(*wxWHITE));
 Connect(ID_POE_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -90,7 +90,7 @@ Connect(ID_POE_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
 
 //creating button for POE+ and connect it to the proper event
 m_print = new wxButton(this, ID_PRINT, wxT("PRINT"),
-	wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) - 100, 50));
+	wxPoint(X_screen - 100, 50));
 m_print->SetBackgroundColour(wxColor(110, 110, 110));
 m_print->SetForegroundColour(wxColor(*wxWHITE));
 Connect(ID_PRINT, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -765,8 +765,8 @@ RightPanel::RightPanel(wxPanel* parent)
 
 	//creating button for RightUP and connect it to the proper event
 	m_right_up = new wxButton(this, ID_RU, wxT("R UP"),
-		wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4 - 100
-			, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3 - 150));
+		wxPoint(X_screen / 4 - 100
+			, Y_screen / 3 - 150));
 	m_right_up->SetBackgroundColour(wxColor(110, 110, 110));
 	m_right_up->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_RU, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -774,8 +774,8 @@ RightPanel::RightPanel(wxPanel* parent)
 
 	//creating button for RightDWN and connect it to the proper event
 	m_right_down = new wxButton(this, ID_RD, wxT("R DWN"),
-		wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4 - 100,
-			wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3 - 100));
+		wxPoint(X_screen / 4 - 100,
+			Y_screen / 3 - 100));
 	m_right_down->SetBackgroundColour(wxColor(110, 110, 110));
 	m_right_down->SetForegroundColour(wxColor(*wxWHITE));
 	Connect(ID_RD, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -787,8 +787,8 @@ RightPanel::RightPanel(wxPanel* parent)
 
 
 LeftPanel::LeftPanel(wxPanel* parent)
-	: wxPanel(parent, wxID_ANY, wxPoint(0, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3),
-		wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3),
+	: wxPanel(parent, wxID_ANY, wxPoint(0, Y_screen * 2 / 3),
+		wxSize(X_screen / 4, Y_screen / 3),
 		/*wxBORDER_SUNKEN*/  wxNO_BORDER)
 {
 	left_font = new wxFont(38, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
@@ -809,14 +809,14 @@ LeftPanel::LeftPanel(wxPanel* parent)
 
 	//creating button for LeftUP and connect it to the proper event
 	m_left_up = new wxButton(this, ID_LU, wxT("L UP"),
-		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3 - 150));
+		wxPoint(10, Y_screen / 3 - 150));
 	Connect(ID_LU, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(LeftPanel::OnLeftUp));
 	m_left_up->SetBackgroundColour(wxColor(110, 110, 110));
 	m_left_up->SetForegroundColour(wxColor(*wxWHITE));
 	//creating button for LeftUP and connect it to the proper event
 	m_left_down = new wxButton(this, ID_LD, wxT("L DWN"),
-		wxPoint(10, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3 - 100));
+		wxPoint(10, Y_screen / 3 - 100));
 	Connect(ID_LD, wxEVT_COMMAND_BUTTON_CLICKED,
 		wxCommandEventHandler(LeftPanel::OnLeftDown));
 	m_left_down->SetBackgroundColour(wxColor(110, 110, 110));
@@ -829,8 +829,8 @@ LeftPanel::LeftPanel(wxPanel* parent)
 //middle panel will be modified only by other events, doesnt have any event by itself
 
 MidlePanel::MidlePanel(wxPanel* parent)
-	: wxPanel(parent, wxID_ANY, wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 4, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3),
-		wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) * 2 / 3),
+	: wxPanel(parent, wxID_ANY, wxPoint(X_screen / 4, Y_screen * 2 / 3),
+		wxSize(X_screen / 2, Y_screen * 2 / 3),
 		/*wxBORDER_SUNKEN*/  wxNO_BORDER)
 {
 	//font setup
@@ -839,7 +839,7 @@ MidlePanel::MidlePanel(wxPanel* parent)
 
 	//textbox for midle screen
 	m_text_mid = new wxStaticText(this, -1, wxT("MESSAGE FOR MID SCREEN\nWILL APPEAR HERE"), wxPoint(10, 10),
-		wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) / 2 - 20, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) / 3 - 20),
+		wxSize(X_screen / 2 - 20, Y_screen / 3 - 20),
 		wxEXPAND | wxALIGN_CENTER);
 
 	m_text_mid->SetFont(*mid_font);
@@ -854,7 +854,7 @@ MidlePanel::MidlePanel(wxPanel* parent)
 //adjustment of size will be needed on final device
 
 PgCounterPanel::PgCounterPanel(wxPanel* parent)
-	: wxPanel(parent, wxID_ANY, wxPoint(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) * 3 / 4 - 250, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) - 100),
+	: wxPanel(parent, wxID_ANY, wxPoint(X_screen * 3 / 4 - 250, Y_screen - 100),
 		wxSize(200, 90),
 		wxBORDER_SUNKEN  /*wxNO_BORDER*/)
 {

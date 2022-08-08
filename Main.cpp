@@ -1,6 +1,8 @@
 #include "Main.h"
 #include "Communicate.h"
 
+//#include "Physical_layer.h"
+
 #include "wx/config.h"
 
 #ifndef wxHAS_IMAGES_IN_RESOURCES
@@ -11,7 +13,7 @@ IMPLEMENT_APP(MyApp)
 
 bool MyApp::OnInit()
 {
-
+    //ConfigurePins();
     // we're using wxConfig's "create-on-demand" feature: it will create the
         // config object when it's used for the first time. It has a number of
         // advantages compared with explicitly creating our wxConfig:
